@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Image, TouchableOpacity, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Text from "@/components/ui/Text";
@@ -6,8 +6,11 @@ import { useTheme } from "@/contexts/theme.provider";
 import { MinusIcon, PlusIcon } from "react-native-heroicons/outline";
 import ChangeDeliveryCatModal from "./change-category-modal";
 import { useCart } from "@/contexts/cart.context";
+import { IOrder } from "@/shared/interfaces/order.interface";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ISettings } from "@/interfaces/settings.interface";
 
-const QuickDelivery = () => {
+const QuickDelivery = ({ paymentData, settings }: { paymentData: any, settings: ISettings }) => {
 
   // ============= states 
   const [isModalVisible, setModalVisible] = useState(false);
@@ -16,7 +19,6 @@ const QuickDelivery = () => {
   const { themeColors } = useTheme()
 
   const { addToCart, cart, updateQuantity, totalQuickPrice } = useCart();
-
 
 
 
@@ -87,7 +89,7 @@ const QuickDelivery = () => {
                 }]}>
                   <View style={{
                     flexDirection: 'row',
-                    width: '55%',
+                    width: '50%',
                     alignItems: 'center'
                   }}>
                     <Image
@@ -99,7 +101,7 @@ const QuickDelivery = () => {
                       flexGrow: 1
                     }]}>
                       <Text variant="caption-sm" >
-                        {item?.product?.details?.title?.length > 18 ? `${item?.product?.details?.title?.slice(0, 18)}..` : item?.product?.details?.title}
+                        {item?.product?.details?.title?.length > 12 ? `${item?.product?.details?.title?.slice(0, 12)}..` : item?.product?.details?.title}
                       </Text>
                       <Text variant="body-xs" style={{
                         color: themeColors.neutral500
@@ -163,15 +165,33 @@ const QuickDelivery = () => {
                       style={{
                         textAlign: 'right'
                       }} >
+                      ₹{item?.variant?.discountPrice ?
+                        settings?.store?.includeSameDayDelivery ? item?.variant?.discountPrice + settings?.delivery?.sameDay[0]?.price : item?.variant?.discountPrice
+                        :
 
-                      ₹{item?.variant?.discountPrice || item?.product?.discountPrice}</Text>
+                        settings?.store?.includeSameDayDelivery ? item?.product?.discountPrice + settings?.delivery?.sameDay[0]?.price : item?.product?.discountPrice
+
+                      }
+                    </Text>
                     <Text variant="body-xxs" style={{
                       color: themeColors.neutral500,
                       textDecorationLine: "line-through",
                       textAlign: 'right'
-                    }}>₹{item?.variant?.originalPrice || item?.product?.originalPrice}</Text>
+                    }}>
+                      ₹{item?.variant?.discountPrice ?
+                        settings?.store?.includeSameDayDelivery ? item?.variant?.originalPrice + settings?.delivery?.sameDay[0]?.price : item?.variant?.originalPrice
+                        :
+
+                        settings?.store?.includeSameDayDelivery ? item?.product?.originalPrice + settings?.delivery?.sameDay[0]?.price : item?.product?.originalPrice
+
+                      }
+
+
+                    </Text>
                   </View>
-                </View>)
+                </View>
+
+              )
             }
 
           </View>
@@ -237,7 +257,7 @@ const QuickDelivery = () => {
             />
             <Text variant="caption-sm" style={{
               color: themeColors.neutral900
-            }} >Switch to Same Day & Save ₹100!</Text>
+            }} >Switch to Same Day & Save ₹{paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee / 100}!</Text>
           </View>
           <View style={{
             flexDirection: 'row',

@@ -11,7 +11,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useQuery } from '@/hooks/useQuery';
 import { IOrder } from '@/shared/interfaces/order.interface';
 import { useMutation } from '@/hooks/useMutation';
-// import RazorpayCheckout from 'react-native-razorpay';
+import RazorpayCheckout from 'react-native-razorpay';
 import SelectAddressModal from '@/components/select-address-modal';
 import { useAuth } from '@/contexts/auth.context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,6 +19,7 @@ import AllIndiaDelivery from '../cart/components/all-india-delivery';
 import SkeletonLoader from '@/components/shared/SkeletonLoader';
 import { ICoupon } from '@/interfaces/cupon.interface';
 import CouponCard from '../cart/components/cuponCard';
+import { ChevronDown } from 'lucide-react-native';
 
 
 interface IOrderData {
@@ -36,16 +37,53 @@ export default function Cart() {
 
   // ================== states
   const [addressModalOpen, setAddressModalOpen] = useState(false)
-
+  //@ts-ignore
+  const [settings, setSettings] = useState<ISettings>({})
+  const [isPaymentClicked, setIPaymentClicked] = useState(false)
+  const [appliedCoupon, setAppliedCoupon] = useState('')
 
 
   // ========== hooks 
   const { themeColors } = useTheme()
   const { addToCart, cart, updateQuantity, clearCart, address, totalItems, totalPrice } = useCart();
   // const { user } = useAuth();
-  const { data: coupons, loading: couponsLoading, refetch } = useQuery<ICuponData>('coupons');
+  const productIds = cart?.map(item => item?.product?._id).join(',');
+  const { data: coupons, loading: couponsLoading, refetch } = useQuery<ICuponData>(`coupons?productIds=${productIds}`);
   const { data: paymentData, error, loading, mutate } = useMutation<IOrderData>();
   const { mutate: placeOrder } = useMutation<any>();
+
+
+
+
+
+
+
+
+
+  async function getSettingData() {
+    try {
+      const settingsString = await AsyncStorage.getItem('settings');
+      if (settingsString) {
+        const settings = JSON.parse(settingsString);
+        setSettings(settings)
+      }
+      return null; // or default settings if needed
+    } catch (error) {
+      console.error('Failed to load settings from AsyncStorage', error);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    getSettingData()
+  }, [])
+
+
+
+
+
+
+
 
   async function getPaymentDetails(couponId: string | null = null) {
     const data: any = {
@@ -71,7 +109,7 @@ export default function Cart() {
         }
       },
       products: cart?.map(item => ({
-        quantity: 1,
+        quantity: item?.quantity,
         productId: item?.product?._id,
         variantId: item?.variant?._id,
         notes: {
@@ -84,7 +122,9 @@ export default function Cart() {
       data.couponIds = [couponId];
     }
 
-    const response = await mutate('orders/validate', 'POST', data);
+    const response: any = await mutate('orders/validate', 'POST', data);
+    const appliedCouponIds = response?.data?.appliedCoupons?.map((item: any) => item?._id)
+    setAppliedCoupon(appliedCouponIds || [])
 
   }
 
@@ -101,12 +141,7 @@ export default function Cart() {
 
 
 
-
-
-
-
-
-  console.log(paymentData?.data?.paymentInfo?.revisedCost?.finalAmount, '}}}}}}}}}}}}}}}}}}}}}}}}}')
+  console.log(JSON.stringify(paymentData), '||||||||||||||||||||||||||||||||||')
 
 
 
@@ -120,54 +155,119 @@ export default function Cart() {
   ): Promise<any> => {
 
 
-    // const orderDetails = await placeOrder(`orders/${paymentData?.data?._id}`, 'PUT',
-    //   {
-    //     "paymentType": "online" // online | cash-on-delivery
-    //   }
-    // );
-    // const orderId = orderDetails?.data?.razorpayOrderId
-    // const userData: any = await AsyncStorage.getItem('userData')
-    // const us = JSON.parse(userData)
+    const orderDetails = await placeOrder(`orders/${paymentData?.data?._id}`, 'PUT',
+      {
+        "paymentType": "online" // online | cash-on-delivery
+      }
+    );
+    const orderId = orderDetails?.data?.razorpayOrderId
+    const userData: any = await AsyncStorage.getItem('userData')
+    const us = JSON.parse(userData)
 
-    // const paymentOptions: any = {
-    //   description: "Credits towards consultation",
-    //   image: "https://www.shutterstock.com/image-vector/zone-letter-original-monogram-logo-260nw-1680065590.jpg",
-    //   currency: "INR",
-    //   // key: "rzp_test_juxG7GwSlx3ANg",
-    //   key: "rzp_test_nP4TSAPxnlADEz",
-    //   amount: `${paymentData?.data?.paymentInfo?.revisedCost?.finalAmount}`,
-    //   name: 'Zone',
-    //   order_id: orderId,
-    //   prefill: {
-    //     email: us?.email,
-    //     contact: us?.phoneNumber?.number,
-    //     name: us?.fullName?.firstName,
-    //   },
-    //   theme: { color: themeColors.primary600 },
-    // };
+    const paymentOptions: any = {
+      description: "Credits towards consultation",
+      image: "https://www.shutterstock.com/image-vector/zone-letter-original-monogram-logo-260nw-1680065590.jpg",
+      currency: "INR",
+      // key: "rzp_test_juxG7GwSlx3ANg",
+      key: "rzp_test_nP4TSAPxnlADEz",
+      amount: `${paymentData?.data?.paymentInfo?.revisedCost?.finalAmount}`,
+      name: 'Zone',
+      order_id: orderId,
+      prefill: {
+        email: us?.email,
+        contact: '919986918617',
+        name: us?.fullName?.firstName,
+      },
+      theme: { color: themeColors.primary600 },
+    };
 
 
-    // if (RazorpayCheckout?.open) {
-    //   return new Promise((resolve, reject) => {
-    //     RazorpayCheckout.open(paymentOptions)
-    //       .then(data => {
-    //         console.log(`Payment Success: ${data}`);
-    //         console.log(`Payment Success: ${data?.razorpay_signature}`);
-    //         console.log(`Payment Success: ${data?.razorpay_order_id}`);
-    //         console.log(`Payment Success: ${data?.razorpay_payment_id}`);
-    //         resolve(data);
-    //         clearCart()
-    //         router.push('/order-list-screen')
-    //       })
-    //       .catch(error => {
-    //         console.error(`Payment Error: ${error} | ${error.description}`);
-    //         reject(error);
-    //       });
-    //   });
-    // }
+    if (RazorpayCheckout?.open) {
+      return new Promise((resolve, reject) => {
+        RazorpayCheckout.open(paymentOptions)
+          .then((data: any) => {
+            console.log(`Payment Success: ${data}`);
+            console.log(`Payment Success: ${data?.razorpay_signature}`);
+            console.log(`Payment Success: ${data?.razorpay_order_id}`);
+            console.log(`Payment Success: ${data?.razorpay_payment_id}`);
+            resolve(data);
+            setIPaymentClicked(!isPaymentClicked)
+            clearCart()
+            router.push('/order-list-screen')
+          })
+          .catch((error: any) => {
+            setIPaymentClicked(!isPaymentClicked)
+            getPaymentDetails()
+            console.error(`Payment Error: ${error} | ${error.description}`);
+            reject(error);
+          });
+      });
+    }
 
   };
 
+
+
+  // const handleMakePayment = async (): Promise<any> => {
+  //   try {
+  //     // Place order and get orderId
+  //     const orderDetails = await placeOrder(`orders/${paymentData?.data?._id}`, 'PUT', {
+  //       paymentType: 'online', // online | cash-on-delivery
+  //     });
+
+  //     const orderId = orderDetails?.data?.razorpayOrderId;
+  //     const userData: any = await AsyncStorage.getItem('userData');
+  //     const us = JSON.parse(userData);
+
+  //     // Prepare Razorpay payment options
+  //     const paymentOptions: any = {
+  //       description: 'Credits towards consultation',
+  //       image: 'https://www.shutterstock.com/image-vector/zone-letter-original-monogram-logo-260nw-1680065590.jpg',
+  //       currency: 'INR',
+  //       key: 'rzp_test_nP4TSAPxnlADEz', // replace with your real key
+  //       amount: `${paymentData?.data?.paymentInfo?.revisedCost?.finalAmount}`,
+  //       name: 'Zone',
+  //       order_id: orderId,
+  //       prefill: {
+  //         email: us?.email,
+  //         contact: '919986918617',
+  //         name: us?.fullName?.firstName,
+  //       },
+  //       theme: { color: themeColors.primary600 },
+  //       modal: {
+  //         ondismiss: () => {
+  //           console.log('Payment modal was closed by the user.');
+  //         },
+  //       },
+  //     };
+
+  //     // Add small delay to ensure Razorpay resets
+  //     return new Promise((resolve, reject) => {
+  //       setTimeout(() => {
+  //         try {
+  //           RazorpayCheckout.open(paymentOptions)
+  //             .then((data: any) => {
+  //               console.log('Payment Success:', data);
+  //               resolve(data);
+  //               clearCart(); // clear cart on successful payment
+  //               router.push('/order-list-screen');
+  //             })
+  //             .catch((error: any) => {
+  //               console.error('Payment Failed or Cancelled:', error?.description || error);
+  //               reject(error);
+  //             });
+  //         } catch (err) {
+  //           console.error('Error opening Razorpay Checkout:', err);
+  //           reject(err);
+  //         }
+  //       }, 200); // delay of 200ms
+  //     });
+
+  //   } catch (err) {
+  //     console.error('Error in handleMakePayment:', err);
+  //     throw err;
+  //   }
+  // };
   // ============== render
 
   return (
@@ -186,13 +286,13 @@ export default function Cart() {
 
         <ScrollView style={styles.container}>
           {
-            cart?.find(item => item?.deliveryOptions == "quick")?.product?._id ? <>   <QuickDelivery /></> : <></>
+            cart?.find(item => item?.deliveryOptions == "quick")?.product?._id ? <>   <QuickDelivery settings={settings} paymentData={paymentData?.data} /></> : <></>
           }
           {
-            cart?.find(item => item?.deliveryOptions == "sameDay")?.product?._id ? <>   <SameDayDelivery /></> : <></>
+            cart?.find(item => item?.deliveryOptions == "sameDay")?.product?._id ? <>   <SameDayDelivery settings={settings} /></> : <></>
           }
           {
-            cart?.find(item => item?.deliveryOptions == "allIndia")?.product?._id ? <>   <AllIndiaDelivery /></> : <></>
+            cart?.find(item => item?.deliveryOptions == "allIndia")?.product?._id ? <>   <AllIndiaDelivery settings={settings} /></> : <></>
           }
 
 
@@ -253,7 +353,7 @@ export default function Cart() {
                           <FlatList
                             data={coupons?.data}
                             renderItem={({ item }) => (
-                              <CouponCard coupon={item} getPaymentDetails={getPaymentDetails} />
+                              <CouponCard coupon={item} getPaymentDetails={getPaymentDetails} appliedCoupon={appliedCoupon} />
                             )}
                             keyExtractor={(item, index) => index.toString()}  // Use a unique key for each item
                             horizontal
@@ -345,9 +445,26 @@ export default function Cart() {
                       {/* <ChevronDownIcon color={themeColors.neutral800} size={18} /> */}
                     </View>
 
-                    <Text variant="body-sm" style={{
-                      color: themeColors.neutral500
-                    }}>{address?.line1}  </Text>
+                    {
+                      address?.line1 ? <Text variant="caption-xs" style={{
+                        color: themeColors.neutral500
+                      }}>{address?.line1?.length > 30 ? `${address?.line1.slice(0, 30)}...` : address?.line1}  </Text> : <>
+                        <View style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 2
+                        }}>
+                          <Text variant="caption-xs" style={{
+                            color: themeColors.neutral500
+                          }}>Select Address   </Text>
+                          <ChevronDown color={themeColors.neutral500} size={20} />
+                        </View>
+
+
+                      </>
+                    }
+
+
                   </View>
 
                   <View>
@@ -360,67 +477,79 @@ export default function Cart() {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                onPress={handleMakePayment}
-                // onPress={() => router.push('/order-success-screen')}
-                style={[{
-                  backgroundColor: themeColors.primary600,
 
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                  paddingVertical: 16,
-                  paddingHorizontal: 20,
-                  borderRadius: 14,
+              {
+                loading ? <>
+                  <SkeletonLoader width={'100%'} height={70} borderRadius={10} />
+                </> :
+
+                  <>
+
+                    <TouchableOpacity
+                      onPress={handleMakePayment}
+                      // onPress={() => router.push('/order-success-screen')}
+                      style={[{
+                        backgroundColor: themeColors.primary600,
+
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        borderBottomRightRadius: 12,
+                        borderBottomLeftRadius: 12,
+                        paddingVertical: 16,
+                        paddingHorizontal: 20,
+                        borderRadius: 14,
 
 
-                }]}>
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 2
-                }}>
-                  <Text variant="caption-md-prominent" style={{
-                    color: themeColors.primary50
-                  }} >{totalItems} Items</Text>
-                  <Text variant="body-md" style={{
-                    color: themeColors.primary50
-                  }} > Selected</Text>
-                </View>
+                      }]}>
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 2
+                      }}>
+                        <Text variant="caption-md-prominent" style={{
+                          color: themeColors.primary50
+                        }} >{totalItems} Items</Text>
+                        <Text variant="body-md" style={{
+                          color: themeColors.primary50
+                        }} > Selected</Text>
+                      </View>
 
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 4
-                }}>
-                  <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 2
-                  }}>
-                    <Text variant="body-md" style={{
-                      color: themeColors.primary50
-                    }} > Pay</Text>
-                    <Text variant="caption-md-prominent" style={{
-                      color: themeColors.primary50
-                    }} >
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 4
+                      }}>
+                        <View style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 2
+                        }}>
+                          <Text variant="body-md" style={{
+                            color: themeColors.primary50
+                          }} > Pay</Text>
+                          <Text variant="caption-md-prominent" style={{
+                            color: themeColors.primary50
+                          }} >
 
-                      ₹{paymentData?.data?.paymentInfo?.revisedCost?.finalAmount / 100}
+                            ₹{paymentData?.data?.paymentInfo?.revisedCost?.finalAmount / 100}
 
-                      {/* {totalPrice} */}
-                    </Text>
+                            {/* {totalPrice} */}
+                          </Text>
 
-                  </View>
-                  <Text variant="body-xl" style={{
-                    color: themeColors.white,
-                    marginTop: 3
-                  }}>
-                    {">"}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+                        </View>
+                        <Text variant="body-xl" style={{
+                          color: themeColors.white,
+                          marginTop: 3
+                        }}>
+                          {">"}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </>
+              }
+
+
             </View>
           </> : <></>
         }

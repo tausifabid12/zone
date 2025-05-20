@@ -31,14 +31,19 @@ export default function CategoryBody({ data }: { data: ICategory[] }) {
             flexDirection: 'row',
             flexWrap: 'wrap',
             // justifyContent: 'space-between',
-            marginTop: 24,
+            marginTop: 16,
             gap: 8
         }}>
             {data && data?.map((item, index) => (
                 <Pressable
                     onPress={() =>
 
-                        router.push({ pathname: '/product-search-screen', params: { categoryId: item?._id } })}
+                        router.push({
+                            pathname: '/product-search-screen', params: {
+                                categoryId: item?._id,
+                                categoryName: item?.name
+                            }
+                        })}
 
 
                     key={index} style={{
@@ -51,9 +56,9 @@ export default function CategoryBody({ data }: { data: ICategory[] }) {
                         height: itemSize,
                         width: itemSize,
                         backgroundColor: '#F9FAFB',
-                        borderRadius: 10000,
+                        borderRadius: 16,
                     }} >
-                        <Image style={{ height: '100%', width: '100%', borderRadius: 1600, }} source={{ uri: item?.image }} />
+                        <Image style={{ height: '100%', width: '100%', borderRadius: 16, }} source={{ uri: item?.image }} />
 
 
                     </View>

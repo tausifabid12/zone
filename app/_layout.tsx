@@ -61,6 +61,7 @@ import { useFonts, Poppins_100Thin, Poppins_200ExtraLight, Poppins_300Light, Pop
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery } from '@/hooks/useQuery';
+import { ISettings } from '@/interfaces/settings.interface';
 // import { useQuery } from '@/hooks/useQuery';
 // import { ISettings } from '@/interfaces/settings.interface';
 
@@ -70,9 +71,9 @@ import { useQuery } from '@/hooks/useQuery';
 
 
 
-// interface ISettingData {
-//   data: ISettings
-// }
+interface ISettingData {
+  data: ISettings
+}
 
 
 
@@ -102,7 +103,7 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(false)
 
   // =============== hooks ========================
-  // const { data: settings, loading: settingLoading } = useQuery<ISettingData>('settings');
+  const { data: settings, loading: settingLoading } = useQuery<ISettingData>('settings');
 
 
 
@@ -118,6 +119,8 @@ export default function RootLayout() {
 
     let location = await Location.getCurrentPositionAsync({});
 
+    console.log('location , """""""""""""""""""""" locationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocationlocation', location)
+
     await AsyncStorage.setItem('userLocation', JSON.stringify({
       lat: location?.coords?.latitude,
       lon: location?.coords?.longitude
@@ -128,20 +131,21 @@ export default function RootLayout() {
   }
 
 
-  // async function saveSettingData() {
-  //   if (settings) {
-  //     AsyncStorage.setItem('settings', JSON.stringify(settings))
-  //   }
-  // }
+  async function saveSettingData() {
+    if (settings) {
+      console.log(settings?.data, "settingssettingssettingssettingssettingssettingssettingssettingssettingssettingssettingssettings")
+      AsyncStorage.setItem('settings', JSON.stringify(settings?.data))
+    }
+  }
 
   useEffect(() => {
     getCurrentLocation();
   }, []);
 
 
-  // useEffect(() => {
-  //   saveSettingData()
-  // }, [settings])
+  useEffect(() => {
+    saveSettingData()
+  }, [settings])
 
 
 

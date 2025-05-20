@@ -29,6 +29,7 @@ type TextVariants =
   | 'body-sm'
   | 'body-xs'
   | 'body-xxs'
+  | 'body-2xs'
   | 'caption-xl-prominent'
   | 'caption-xl'
   | 'caption-lg-prominent'
@@ -40,6 +41,7 @@ type TextVariants =
   | 'caption-xs-prominent'
   | 'caption-xs'
   | 'caption-xxs-prominent'
+  | 'caption-2xs-prominent'
   | 'caption-xxs';
 
 interface CustomTextProps extends TextProps {
@@ -63,6 +65,7 @@ const typography: Record<TextVariants, TextStyle> = StyleSheet.create({
   'body-sm': { fontFamily: 'Poppins_400Regular', fontSize: scaleFontSize(14), fontWeight: '400', lineHeight: scaleFontSize(18), letterSpacing: -0.5 },
   'body-xs': { fontFamily: 'Poppins_400Regular', fontSize: scaleFontSize(13), fontWeight: '400', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
   'body-xxs': { fontFamily: 'Poppins_400Regular', fontSize: scaleFontSize(12), fontWeight: '400', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
+  'body-2xs': { fontFamily: 'Poppins_400Regular', fontSize: scaleFontSize(11), fontWeight: '400', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
   'caption-xl-prominent': { fontFamily: 'Poppins_600SemiBold', fontSize: scaleFontSize(20), fontWeight: '600', lineHeight: scaleFontSize(24), letterSpacing: -0.5 },
   'caption-xl': { fontFamily: 'Poppins_500Medium', fontSize: scaleFontSize(20), fontWeight: '500', lineHeight: scaleFontSize(24), letterSpacing: -0.5 },
   'caption-lg-prominent': { fontFamily: 'Poppins_600SemiBold', fontSize: scaleFontSize(18), fontWeight: '600', lineHeight: scaleFontSize(24), letterSpacing: -0.5 },
@@ -74,6 +77,7 @@ const typography: Record<TextVariants, TextStyle> = StyleSheet.create({
   'caption-xs-prominent': { fontFamily: 'Poppins_600SemiBold', fontSize: scaleFontSize(13), fontWeight: '600', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
   'caption-xs': { fontFamily: 'Poppins_500Medium', fontSize: scaleFontSize(13), fontWeight: '500', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
   'caption-xxs-prominent': { fontFamily: 'Poppins_600SemiBold', fontSize: scaleFontSize(12), fontWeight: '600', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
+  'caption-2xs-prominent': { fontFamily: 'Poppins_600SemiBold', fontSize: scaleFontSize(11), fontWeight: '600', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
   'caption-xxs': { fontFamily: 'Poppins_500Medium', fontSize: scaleFontSize(12), fontWeight: '500', lineHeight: scaleFontSize(16), letterSpacing: -0.5 },
 });
 

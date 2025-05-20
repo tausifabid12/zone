@@ -30,22 +30,30 @@ export default function ({ data }: { data: IProduct }) {
                         flexDirection: 'row',
                         width: '80%'
                     }}>
-                        <Image source={{ uri: data?.store?.logo || 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg' }} style={{
-                            width: 40,
-                            height: '100%',
+                        <Image source={require('../../../assets/icons/Bolt.png')} style={{
+                            width: 16,
+                            height: 16,
                             marginRight: 4,
                             // marginTop: -4
                         }} />
-                        <View>
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 6
+                        }}>
                             <Text variant="caption-md">{data?.store?.name}
                             </Text>
                             {
-                                data?.store?.distance ? <>
-                                    <Text variant='body-xxs' style={{
-                                        color: themeColors.primary600
-                                    }}>{data?.store?.distance / 1000} km away</Text>
-                                </> : <></>
-
+                                data?.store?.distance != null && (
+                                    <Text
+                                        variant='body-xxs'
+                                        style={{ color: themeColors.primary600 }}
+                                    >
+                                        {data.store.distance >= 1000
+                                            ? `${(data.store.distance / 1000).toFixed(2)} km away`
+                                            : `${data.store.distance?.toFixed(2)} m away`}
+                                    </Text>
+                                )
                             }
                             {/* <Text variant="body-xs" style={{
                                 color: themeColors.neutral500

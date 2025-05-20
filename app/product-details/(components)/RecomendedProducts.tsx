@@ -44,7 +44,7 @@ const RecomendedProducts = () => {
                             shadowOffset: { width: 0, height: 2 },
                             shadowOpacity: 0.1,
                             shadowRadius: 4,
-                            height: 200,
+                            height: 220,
                             marginBottom: 24
                         }}
                     >
@@ -77,17 +77,36 @@ const RecomendedProducts = () => {
                         </Text>
 
                         {/* Rating and Reviews */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Text variant='caption-xs' style={{ color: themeColors.success800 }}>
                                 ★ {item.rating}
                             </Text>
                             <Text variant='body-xxs' style={{ color: themeColors.neutral400, marginLeft: 4 }}>
                                 (0)
                             </Text>
+                        </View> */}
+
+                        {/* Rating and Reviews */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                            {
+                                [...Array(item?.rating)]?.map(item => <StarIcon key={item} size={16} color={'#FBBF24'} />)
+                            }
+                            {
+                                [...Array(5 - item?.rating)]?.map(item => <StarIcon size={16} color={'#E5E7EB'} />)
+                            }
+
+                        </View>
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: "center",
+                            gap: 6
+                        }}>
+                            <Text variant="caption-sm-prominent" style={{ marginBottom: 16, color: themeColors.neutral800 }}>₹{item?.discountPrice}</Text>
+                            <Text variant="caption-sm" style={{ marginBottom: 16, color: themeColors.neutral400, textDecorationLine: "line-through" }}>₹{item?.originalPrice}</Text>
                         </View>
                     </Pressable>
                 )}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.listContainer}

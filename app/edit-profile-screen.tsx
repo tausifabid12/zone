@@ -9,6 +9,7 @@ import { useQuery } from '@/hooks/useQuery'
 import Loading from '@/components/shared/loading'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import OtpModal from '@/components/OtpModal'
+import { useAuth } from '@/contexts/auth.context'
 // import { showMessage, hideMessage } from "react-native-flash-message";
 
 export default function EditProfileScreen() {
@@ -25,6 +26,7 @@ export default function EditProfileScreen() {
 
     // ========== hooks 
     const { themeColors } = useTheme()
+    const { user, setUser } = useAuth()
 
 
 
@@ -64,6 +66,7 @@ export default function EditProfileScreen() {
             const response = await mutate('customers/profile', 'POST', data);
 
             AsyncStorage.setItem('userData', JSON.stringify(data))
+            setUser(data)
 
             if (response) {
                 refetch()
@@ -181,11 +184,11 @@ export default function EditProfileScreen() {
                                     height: 40,
                                     flex: 1
                                 }} />
-                            <TouchableOpacity onPress={() => setModalVisible(true)}>
+                            {/* <TouchableOpacity onPress={() => setModalVisible(true)}>
                                 <Text variant="caption-sm" style={{ marginBottom: 4, color: themeColors.primary600 }}>
                                     Verify
                                 </Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
 
                         </View>
                     </View>

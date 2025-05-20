@@ -29,8 +29,11 @@
 
 // App.tsx or any screen component
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import LottieView from 'lottie-react-native';
+
+const { width } = Dimensions.get('window');
+const lottieSize = width * 0.9; // 80% of screen width
 
 export default function App() {
     return (
@@ -39,7 +42,7 @@ export default function App() {
                 source={require('../../assets/y5XlS02dYP.json')}
                 autoPlay
                 loop
-                style={{ width: 450, height: 450 }}
+                style={{ width: lottieSize, height: lottieSize }}
             />
         </View>
     );
@@ -53,7 +56,9 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         bottom: 0,
+        left: 0,
+        right: 0,
         zIndex: 1000000000,
-        backgroundColor: 'white'
+        backgroundColor: 'white',
     },
 });

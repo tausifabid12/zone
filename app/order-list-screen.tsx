@@ -46,6 +46,9 @@ const OrderListScreen = () => {
     ];
 
 
+    console.log(orderData?.data[0]?.line_items?.[0]?.image_url)
+
+
     // if (userLoading) {
     //     return <Loading />
     // }
@@ -92,15 +95,29 @@ const OrderListScreen = () => {
                                     <View style={{
                                         gap: 2
                                     }}>
-                                        <Text variant="caption-md">Order# {item?.receipt}</Text>
+                                        <Text variant="caption-md"># {item?.receipt}</Text>
                                         <View style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
                                             gap: 8
                                         }}>
-                                            <Text variant="body-sm">{item?.products?.length} Items</Text>
-                                            <Text variant="body-sm">• ₹{item?.paymentInfo?.revisedCost?.finalAmount}</Text>
+                                            <Text variant="body-xs">{item?.products?.length} Items</Text>
+                                            <Text variant="body-xs">• ₹{item?.paymentInfo?.revisedCost?.finalAmount}</Text>
                                         </View>
+                                    </View>
+
+                                    <View style={{
+                                        backgroundColor: item?.line_items?.find(ord => ord?.notes?.status == "pending" || ord?.notes?.status == "arriving" || ord?.notes?.status == "packing")?.sku ? themeColors.primary600 : themeColors.success500,
+                                        paddingVertical: 4,
+                                        paddingHorizontal: 8,
+                                        borderRadius: 4
+
+                                    }}>
+                                        <Text style={{
+                                            color: themeColors.white
+                                        }} variant='caption-xxs'>
+                                            {item?.line_items?.find(ord => ord?.notes?.status == "pending" || ord?.notes?.status == "arriving" || ord?.notes?.status == "packing")?.sku ? 'Arriving' : 'Delivered'}
+                                        </Text>
                                     </View>
                                     <ChevronRightIcon color="black" size={24} />
                                 </TouchableOpacity>

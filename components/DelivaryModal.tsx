@@ -5,6 +5,7 @@ import {
     TouchableOpacity,
     FlatList,
     Pressable,
+    Image,
 } from "react-native";
 import Text from "./ui/Text";
 import { useTheme } from "@/contexts/theme.provider";
@@ -25,7 +26,7 @@ import Modal from "react-native-modal";
 
 
 const DeliveryModal = ({ isModalVisible, setModalVisible, currentProduct, selectedVariant }: {
-    currentProduct: any,
+    currentProduct: IProduct
     isModalVisible: any,
     setModalVisible: any,
     selectedVariant?: any
@@ -35,7 +36,9 @@ const DeliveryModal = ({ isModalVisible, setModalVisible, currentProduct, select
     // ========= states
     const [quantity, setQuantity] = useState(1)
     const [selectedOption, setSelectedOption] = useState<any>('sameDay');
-    const [settings, setSettings] = useState<ISettings | null>(null)
+    //@ts-ignore
+
+    const [settings, setSettings] = useState<ISettings>({})
 
     // ========== hooks 
     const { themeColors } = useTheme()
@@ -65,19 +68,35 @@ const DeliveryModal = ({ isModalVisible, setModalVisible, currentProduct, select
 
 
 
-    function getDeliveryPrice(options: any[], distance: number): number | null {
-        const matched = options?.find(option =>
-            distance >= option?.distanceRange[0] && distance <= option?.distanceRange[1]
-        );
-        return matched ? matched.price : 0;
+    // function getDeliveryPrice(options: any[], distance: number): number | null {
+    //     const matched = options?.find(option =>
+    //         distance >= option?.distanceRange[0] && distance <= option?.distanceRange[1]
+    //     );
+    //     return matched ? matched.price : 0;
 
+    // }
+
+
+
+
+
+    async function getSettingData() {
+        try {
+            const settingsString = await AsyncStorage.getItem('settings');
+            if (settingsString) {
+                const settings = JSON.parse(settingsString);
+                setSettings(settings)
+            }
+            return null; // or default settings if needed
+        } catch (error) {
+            console.error('Failed to load settings from AsyncStorage', error);
+            return null;
+        }
     }
 
-
-
-    console.log(currentProduct?.store?.distance, '|||||||||||||||||')
-
-
+    useEffect(() => {
+        getSettingData()
+    }, [])
 
 
     const toggleModal = () => {
@@ -90,12 +109,35 @@ const DeliveryModal = ({ isModalVisible, setModalVisible, currentProduct, select
 
 
 
+    function getDeliveryPrice(distanceInMeters: number, quickRates: any[]) {
+        const distanceInKm = distanceInMeters / 1000;
+
+        for (const rate of quickRates) {
+            const [min, max] = rate.distanceRange;
+            if (distanceInKm >= min && distanceInKm < max) {
+
+                if (!settings?.store?.includeSameDayDelivery) {
+                    return rate.price + settings?.delivery?.sameDay[0]?.price
+                } else {
+                    return rate.price;
+                }
+
+            }
+        }
+
+        // Fallback if no range matches
+        return quickRates[quickRates.length - 1]?.price || 0;
+    }
+
 
     useEffect(() => {
         getSettings()
 
     }, [])
 
+
+
+    console.log(currentProduct?.store?.distance, " distace",)
 
 
 
@@ -159,23 +201,253 @@ const DeliveryModal = ({ isModalVisible, setModalVisible, currentProduct, select
                             marginHorizontal: 16,
                             backgroundColor: themeColors.background,
                             padding: 16,
-                            borderRadius: 12
+                            borderRadius: 12,
+                            flexDirection: "column",
+                            gap: 8
                         }}>
+
+
+                            {/* ========================== quick */}
+
+                            {
+                                currentProduct?.store?.distance < 7999 && <TouchableOpacity
+                                    style={[
+                                        styles.optionContainer,
+                                        selectedOption === 'quick' && styles.optionSelected,
+                                    ]}
+                                    onPress={() => handleSelection('quick')}
+                                >
+
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                        marginLeft: -15.5
+
+                                    }}>
+                                        <Image source={require('../assets/icons/Bolt.png')} style={{
+                                            width: 14,
+                                            height: 12,
+                                            objectFit: "contain",
+                                            marginTop: -3
+                                        }} />
+
+                                        <View style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            gap: 6
+                                        }}>
+                                            <Text style={{
+                                                textTransform: 'capitalize'
+                                            }} variant="body-md">Quick
+
+                                            </Text>
+                                            <Text variant="body-xxs" style={{
+                                                color: themeColors.neutral400,
+                                            }}>
+                                                (Delivery in 2 hours)
+                                            </Text>
+
+                                        </View>
+                                    </View>
+
+
+
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 3
+                                    }}>
+
+
+
+
+                                        <Text>
+                                            ₹{getDeliveryPrice(currentProduct?.store?.distance, currentProduct?.details?.deliveryCost?.quick)}
+
+                                        </Text>
+                                        <View
+                                            style={[
+                                                styles.radioCircle,
+                                                selectedOption === "quick" && styles.radioSelected,
+                                            ]}
+                                        >
+                                            <View style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                backgroundColor: selectedOption === "quick" ? themeColors.primary600 : 'transparent',
+                                                borderRadius: 10000
+                                            }}>
+
+                                            </View>
+                                        </View>
+
+                                    </View>
+                                </TouchableOpacity>
+                            }
+
+
+                            {/* ========================== Same day delivery */}
+                            {
+                                currentProduct?.store?.distance < 34099 &&
+                                <TouchableOpacity
+                                    style={[
+                                        styles.optionContainer,
+                                        selectedOption === 'sameDay' && styles.optionSelected,
+                                    ]}
+                                    onPress={() => handleSelection('sameDay')}
+                                >
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 6
+                                    }}>
+                                        <Text style={{
+                                            textTransform: 'capitalize'
+                                        }} variant="body-md">
+                                            Same Day
+
+                                        </Text>
+                                        <Text variant="body-xxs" style={{
+                                            color: themeColors.neutral400,
+                                        }}>
+                                            (Delivery in 24 hours)
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 3
+                                    }}>
+
+
+
+
+                                        <Text style={{
+                                            color: settings?.store?.includeSameDayDelivery ? themeColors?.success600 : themeColors?.neutral800
+                                        }}>
+                                            {settings?.store?.includeSameDayDelivery ? 'Free' : `₹${settings?.delivery?.sameDay[0]?.price}`}
+
+                                        </Text>
+                                        <View
+                                            style={[
+                                                styles.radioCircle,
+                                                selectedOption === "sameDay" && styles.radioSelected,
+                                            ]}
+                                        >
+                                            <View style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                backgroundColor: selectedOption === "sameDay" ? themeColors.primary600 : 'transparent',
+                                                borderRadius: 10000
+                                            }}>
+
+                                            </View>
+                                        </View>
+
+                                    </View>
+                                </TouchableOpacity>
+                            }
+                            {/* ========================== All India */}
+
+                            {
+                                settings?.store?.isAllIndiaStoreActive && <TouchableOpacity
+                                    style={[
+                                        styles.optionContainer,
+                                        selectedOption === 'allIndia' && styles.optionSelected,
+                                    ]}
+                                    onPress={() => handleSelection('allIndia')}
+                                >
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 6
+                                    }}>
+                                        <Text style={{
+                                            textTransform: 'capitalize'
+                                        }} variant="body-md">
+                                            All India
+
+                                        </Text>
+                                        <Text variant="body-xxs" style={{
+                                            color: themeColors.neutral400,
+                                        }}>
+                                            (5 to 7 days)
+                                        </Text>
+
+                                    </View>
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 3
+                                    }}>
+
+
+
+
+                                        <Text style={{
+                                            color: !settings?.delivery?.allIndia[0]?.price ? themeColors?.success600 : themeColors?.neutral800
+                                        }}>
+                                            {settings?.delivery?.allIndia[0]?.price ? `₹${settings?.delivery?.allIndia[0]?.price}` : 'Free'}
+
+                                        </Text>
+                                        <View
+                                            style={[
+                                                styles.radioCircle,
+                                                selectedOption === "allIndia" && styles.radioSelected,
+                                            ]}
+                                        >
+                                            <View style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                backgroundColor: selectedOption === "allIndia" ? themeColors.primary600 : 'transparent',
+                                                borderRadius: 10000
+                                            }}>
+
+                                            </View>
+                                        </View>
+
+                                    </View>
+                                </TouchableOpacity>
+                            }
+
+
+
+
+
+
+
+
+
+
                             {/* Delivery Options */}
-                            <FlatList
+                            {/* <FlatList
                                 data={
+                                    Object.keys(currentProduct?.deliveryOptions)?.filter(
+                                        // key => currentProduct?.deliveryOptions[key] === true)
 
-                                    currentProduct?.store?.distance > 10 ?
+                                        currentProduct?.store?.distance > 800000000 ?
 
-                                        Object.keys(currentProduct?.deliveryOptions)?.filter(
-                                            key => currentProduct?.deliveryOptions[key] === true && key !== 'quick'
-                                        )
+                                            Object.keys(currentProduct?.deliveryOptions)?.filter(
+                                                key => currentProduct?.deliveryOptions[key] === true && key !== 'quick'
+                                            )
 
-                                        :
-                                        Object.keys(currentProduct?.deliveryOptions)?.filter(
-                                            key => currentProduct?.deliveryOptions[key] === true
-                                        )
+                                            :
 
+                                            currentProduct?.store?.distance > 35 ?
+
+                                                Object.keys(currentProduct?.deliveryOptions)?.filter(
+                                                    key => currentProduct?.deliveryOptions[key] === true && key !== 'sameDay'
+                                                )
+                                                :
+
+                                                Object.keys(currentProduct?.deliveryOptions)?.filter(
+                                                    key => currentProduct?.deliveryOptions[key] === true
+                                                )
+
+                                    )
 
                                 }
                                 keyExtractor={(item) => item}
@@ -247,7 +519,7 @@ const DeliveryModal = ({ isModalVisible, setModalVisible, currentProduct, select
                                         </View>
                                     </TouchableOpacity>
                                 )}
-                            />
+                            /> */}
 
 
                         </View>

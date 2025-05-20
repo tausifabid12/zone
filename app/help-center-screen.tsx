@@ -65,7 +65,8 @@ const OrderListScreen = () => {
 
             />
             <ScrollView style={{
-                flex: 1
+                flex: 1,
+                backgroundColor: themeColors.background
             }}>
                 <View style={styles.container}>
 

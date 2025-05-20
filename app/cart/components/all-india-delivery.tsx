@@ -6,8 +6,9 @@ import { useTheme } from "@/contexts/theme.provider";
 import { MinusIcon, PlusIcon } from "react-native-heroicons/outline";
 import ChangeDeliveryCatModal from "./change-category-modal";
 import { useCart } from "@/contexts/cart.context";
+import { ISettings } from "@/interfaces/settings.interface";
 
-const AllIndiaDelivery = () => {
+const AllIndiaDelivery = ({ settings }: { settings: ISettings }) => {
 
     // ============= states 
     const [isModalVisible, setModalVisible] = useState(false);
@@ -89,7 +90,7 @@ const AllIndiaDelivery = () => {
                                 }]}>
                                     <View style={{
                                         flexDirection: 'row',
-                                        width: '55%',
+                                        width: '50%',
                                         alignItems: 'center'
                                     }}>
                                         <Image
@@ -101,7 +102,7 @@ const AllIndiaDelivery = () => {
                                             flexGrow: 1
                                         }]}>
                                             <Text variant="caption-sm" >
-                                                {item?.product?.details?.title?.length > 16 ? `${item?.product?.details?.title?.slice(0, 16)}..` : item?.product?.details?.title}
+                                                {item?.product?.details?.title?.length > 12 ? `${item?.product?.details?.title?.slice(0, 12)}..` : item?.product?.details?.title}
                                             </Text>
                                             <Text variant="body-xs" style={{
                                                 color: themeColors.neutral500
@@ -165,13 +166,29 @@ const AllIndiaDelivery = () => {
                                             style={{
                                                 textAlign: 'right'
                                             }} >
+                                            ₹{item?.variant?.discountPrice ?
+                                                settings?.store?.includeSameDayDelivery ? item?.variant?.discountPrice + settings?.delivery?.sameDay[0]?.price : item?.variant?.discountPrice
+                                                :
 
-                                            ₹{item?.variant?.discountPrice || item?.product?.discountPrice}</Text>
+                                                settings?.store?.includeSameDayDelivery ? item?.product?.discountPrice + settings?.delivery?.sameDay[0]?.price : item?.product?.discountPrice
+
+                                            }
+                                        </Text>
                                         <Text variant="body-xxs" style={{
                                             color: themeColors.neutral500,
                                             textDecorationLine: "line-through",
                                             textAlign: 'right'
-                                        }}>₹{item?.variant?.originalPrice || item?.product?.originalPrice}</Text>
+                                        }}>
+                                            ₹{item?.variant?.discountPrice ?
+                                                settings?.store?.includeSameDayDelivery ? item?.variant?.originalPrice + settings?.delivery?.sameDay[0]?.price : item?.variant?.originalPrice
+                                                :
+
+                                                settings?.store?.includeSameDayDelivery ? item?.product?.originalPrice + settings?.delivery?.sameDay[0]?.price : item?.product?.originalPrice
+
+                                            }
+
+
+                                        </Text>
                                     </View>
                                 </View>)
                         }

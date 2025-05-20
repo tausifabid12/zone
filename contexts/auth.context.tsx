@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IUser } from '@/shared/interfaces/user.interface';
 // import auth from '@react-native-firebase/auth';
 
 interface AuthContextProps {
@@ -7,6 +8,7 @@ interface AuthContextProps {
     loading: boolean;
     signInWithPhoneNumber: (phoneNumber: string) => Promise<void>;
     confirmCode: (code: string) => Promise<void>;
+    setUser: (code: any) => void;
     logout: () => Promise<void>;
 }
 
@@ -70,7 +72,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithPhoneNumber, confirmCode, logout }}>
+        <AuthContext.Provider value={{ user, setUser, loading, signInWithPhoneNumber, confirmCode, logout }}>
             {children}
         </AuthContext.Provider>
     );

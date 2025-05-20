@@ -6,13 +6,19 @@ import { useTheme } from '@/contexts/theme.provider'
 import { useWishlist } from '@/contexts/wishlist.context'
 import { IProduct } from '@/interfaces/product.interface'
 import { router } from 'expo-router'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Image, TouchableOpacity, View, Text as RNText, StyleSheet, Pressable } from 'react-native'
 import { BookmarkIcon } from 'react-native-heroicons/outline'
 import { BookmarkIcon as SolidBookMark, StarIcon } from 'react-native-heroicons/solid'
-
+import Fontisto from '@expo/vector-icons/Fontisto';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { ISettings } from '@/interfaces/settings.interface'
 export default function ProductCard({ item, setModalVisible, setCurrentProduct }: { item: IProduct, setCurrentProduct: any, setModalVisible: any }) {
 
+
+    //@ts-ignore
+
+    const [settings, setSettings] = useState<ISettings>({})
     const { addToCart, cart, updateQuantity } = useCart();
     const { isInWishlist, toggleWishlist } = useWishlist();
     const { themeColors } = useTheme()
@@ -22,6 +28,27 @@ export default function ProductCard({ item, setModalVisible, setCurrentProduct }
             ? `${item?.details?.title.slice(0, 40)} ...`
             : `${item?.details?.title}`;
     }, [item?.details?.title]);
+
+    async function getSettingData() {
+        try {
+            const settingsString = await AsyncStorage.getItem('settings');
+            if (settingsString) {
+                const settings = JSON.parse(settingsString);
+                setSettings(settings)
+            }
+            return null; // or default settings if needed
+        } catch (error) {
+            console.error('Failed to load settings from AsyncStorage', error);
+            return null;
+        }
+    }
+
+    useEffect(() => {
+        getSettingData()
+    }, [])
+
+    console.log(settings, 'settings')
+
 
 
 
@@ -44,18 +71,35 @@ export default function ProductCard({ item, setModalVisible, setCurrentProduct }
                         gap: 12
                     }}>
                         {/* Quick Tag */}
-                        {item.deliveryOptions?.quick && (
-                            <Text variant="caption-xxs-prominent" style={styles.quickTag}>
-                                ⚡ Quick
-                            </Text>
+                        {(item.store?.distance / 1000) < 8 && (
+
+                            <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                            }}>
+                                <Image source={require('../../../assets/icons/Bolt.png')} style={{
+                                    width: 14,
+                                    height: 12,
+                                    objectFit: "contain",
+                                    marginTop: -3
+                                }} />
+
+                                <Text variant="caption-xxs-prominent" style={[styles.quickTag, {
+
+                                }]}>
+                                    Quick
+                                </Text>
+                            </View>
+
                         )}
-                        {item.deliveryOptions?.sameDay && (
+                        {(item.store?.distance / 1000) < 35 && (
                             <Text variant="caption-xxs-prominent" style={{
                                 color: themeColors.neutral900
                             }}>
                                 Same Day
                             </Text>
                         )}
+
                     </View>
 
                     {/* Product Name */}
@@ -86,8 +130,13 @@ export default function ProductCard({ item, setModalVisible, setCurrentProduct }
                         alignItems: "center",
                         gap: 6
                     }}>
-                        <Text variant="caption-md-prominent" style={{ marginBottom: 16, color: themeColors.neutral800 }}>₹{item?.discountPrice}</Text>
-                        <Text variant="caption-md" style={{ marginBottom: 16, color: themeColors.neutral400, textDecorationLine: "line-through" }}>₹{item?.originalPrice}</Text>
+                        <Text variant="caption-md-prominent" style={{ marginBottom: 16, color: themeColors.neutral800 }}>
+                            ₹{settings?.store?.includeSameDayDelivery && !item?.details?.brandName ? item?.discountPrice + settings?.delivery?.sameDay[0]?.price : item?.discountPrice}
+                        </Text>
+                        <Text variant="caption-md" style={{ marginBottom: 16, color: themeColors.neutral400, textDecorationLine: "line-through" }}>
+                            ₹{settings?.store?.includeSameDayDelivery && !item?.details?.brandName ? item?.originalPrice + settings?.delivery?.sameDay[0]?.price : item?.originalPrice}
+
+                        </Text>
                     </View>
 
 
@@ -144,13 +193,42 @@ export default function ProductCard({ item, setModalVisible, setCurrentProduct }
                                     alignItems: 'center',
                                     borderRadius: 16,
                                     height: 137,
-                                    justifyContent: 'center'
+                                    justifyContent: 'center',
+                                    position: 'relative'
                                 }}>
                                 <Image
                                     source={{ uri: item?.details?.thumbnail || '' }}
                                     style={styles.productImage}
                                     resizeMode="contain"
                                 />
+
+                                {/* =================== discount ================== */}
+                                <View style={{
+                                    backgroundColor: themeColors.primary600,
+                                    top: 0,
+                                    right: 0,
+                                    height: 39,
+                                    position: 'absolute',
+                                    borderTopRightRadius: 16,
+                                    borderBottomLeftRadius: 16,
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: "center",
+                                    padding: 5,
+                                    paddingHorizontal: 4.5
+                                }}>
+                                    <Text variant="caption-2xs-prominent" style={{
+                                        color: themeColors.white
+                                    }}>
+                                        {Math.round(((Number(item?.originalPrice) - Number(item?.discountPrice)) / Number(item?.originalPrice)) * 100)}
+                                        %
+                                    </Text>
+                                    <Text variant="body-2xs" style={{
+                                        color: themeColors.white
+                                    }}>
+                                        OFF
+                                    </Text>
+                                </View>
                             </Pressable>
                             <View style={{
                                 // backgroundColor: 'red',
@@ -189,7 +267,7 @@ export default function ProductCard({ item, setModalVisible, setCurrentProduct }
                                                 }}
                                                 onPress={() => {
                                                     // @ts-ignore
-                                                    updateQuantity(item?._id, item?.variants[0]?.name, (cart?.find(p => p?.product?._id == item?._id)?.quantity - 1))
+                                                    updateQuantity(item?._id, item?.variants[0]?._id, (cart?.find(p => p?.product?._id == item?._id)?.quantity - 1))
                                                 }}>
                                                 <Icon name='minus' size={16} />
                                             </Pressable>
@@ -205,7 +283,7 @@ export default function ProductCard({ item, setModalVisible, setCurrentProduct }
                                                 onPress={() => {
 
                                                     // @ts-ignore
-                                                    updateQuantity(item?._id, item?.variants[0]?.name, (cart?.find(p => p?.product?._id == item?._id)?.quantity + 1))
+                                                    updateQuantity(item?._id, item?.variants[0]?._id, (cart?.find(p => p?.product?._id == item?._id)?.quantity + 1))
                                                 }}>
                                                 <Icon name='plus' size={16} />
                                             </Pressable>
@@ -251,6 +329,9 @@ export default function ProductCard({ item, setModalVisible, setCurrentProduct }
                     </>
                 }
 
+
+
+
             </View>
 
         </>
@@ -281,7 +362,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderBottomWidth: 1,
         borderColor: "#F0F0F0",
-        paddingBottom: 20
+        paddingBottom: 20,
+
     },
     productInfo: {
         flex: 1,

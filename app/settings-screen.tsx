@@ -1,10 +1,11 @@
-import { Image, Pressable, StatusBar, StyleSheet, View } from 'react-native'
+import { Image, Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native'
 import React from 'react'
 import Navbar2 from '@/components/Navbar2'
 import { useTheme } from '@/contexts/theme.provider'
 import Text from '@/components/ui/Text'
 import { router } from 'expo-router'
 import { useAuth } from '@/contexts/auth.context'
+import { BellRing, Bookmark, Box, CircleUserRound, ExternalLink, Headphones, Heart, LogOut, MapPin, ShieldHalf } from 'lucide-react-native'
 
 export default function settingsScreen() {
 
@@ -16,7 +17,7 @@ export default function settingsScreen() {
 
 
 
-    console.log(user?.fullName?.firstName, '{{{{{{{ user user user user useruser user user')
+
 
 
     // ====================== render ==========================
@@ -28,7 +29,7 @@ export default function settingsScreen() {
                 barStyle="dark-content"
             />
 
-            <View style={{
+            <ScrollView style={{
                 flex: 1,
                 backgroundColor: themeColors.background
             }}>
@@ -91,13 +92,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/profile/user.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <CircleUserRound size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -123,13 +118,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Box Minimalistic.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <Box size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -155,13 +144,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Bookmark.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <Bookmark size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -187,13 +170,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Map Point Favourite.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <MapPin size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -219,13 +196,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Headphones Round.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <Headphones size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -279,13 +250,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Square Share Line.jpg")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <ExternalLink size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -311,13 +276,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Heart.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <Heart size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -375,13 +334,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Info Circle.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <BellRing size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -407,13 +360,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Shield.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <ShieldHalf size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -439,13 +386,7 @@ export default function settingsScreen() {
                                 borderRadius: 1000
 
                             }}>
-                                <Image
-                                    source={require("../assets/icons/general/Arrows ALogout 2.png")}
-                                    style={{
-                                        height: 20,
-                                        width: 20
-                                    }}
-                                />
+                                <LogOut size={22} color={themeColors.neutral700} />
                             </View>
 
                             <Text variant='body-lg' >
@@ -463,32 +404,33 @@ export default function settingsScreen() {
 
 
 
-
-
-            </View>
-
-
-            <View style={{
-                backgroundColor: themeColors.background,
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingBottom: 47
-            }}>
-                <Text variant='caption-xl-prominent' style={{
-                    color: themeColors.neutral400,
-                    alignItems: 'center'
+                <View style={{
+                    backgroundColor: themeColors.background,
+                    width: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingBottom: 47,
+                    paddingTop: 14
                 }}>
-                    Zone
-                </Text>
-                <Text variant='body-xxs' style={{
-                    color: themeColors.neutral400,
-                    alignItems: 'center'
-                }}>
-                    V 1.1
-                </Text>
+                    <Text variant='caption-xl-prominent' style={{
+                        color: themeColors.neutral400,
+                        alignItems: 'center'
+                    }}>
+                        Zone
+                    </Text>
+                    <Text variant='body-xxs' style={{
+                        color: themeColors.neutral400,
+                        alignItems: 'center'
+                    }}>
+                        V 1.1
+                    </Text>
 
-            </View>
+                </View>
+
+            </ScrollView>
+
+
+
         </>
     )
 }

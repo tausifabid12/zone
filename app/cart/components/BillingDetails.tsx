@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     StyleSheet,
@@ -16,6 +16,8 @@ import { IProduct } from "@/interfaces/product.interface";
 import Text from "@/components/ui/Text";
 import { IOrder } from "@/shared/interfaces/order.interface";
 import Tooltip from "./Tooltip";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ISettings } from "@/interfaces/settings.interface";
 
 const BillingDetails = ({ paymentData, isModalVisible, setModalVisible, }: {
     paymentData: IOrder,
@@ -28,10 +30,38 @@ const BillingDetails = ({ paymentData, isModalVisible, setModalVisible, }: {
     const [quantity, setQuantity] = useState(1)
     const [selectedOption, setSelectedOption] = useState(null);
     const [showTooltip, setShowTooltip] = useState(false);
+    const [settings, setSettings] = useState<ISettings>({})
 
     // ========== hooks 
     const { themeColors } = useTheme()
     const { addToCart, cart, updateQuantity, totalPrice } = useCart();;
+
+
+
+
+
+
+    async function getSettingData() {
+        try {
+            const settingsString = await AsyncStorage.getItem('settings');
+            if (settingsString) {
+                const settings = JSON.parse(settingsString);
+                setSettings(settings)
+            }
+            return null; // or default settings if needed
+        } catch (error) {
+            console.error('Failed to load settings from AsyncStorage', error);
+            return null;
+        }
+    }
+
+    useEffect(() => {
+        getSettingData()
+    }, [])
+
+
+
+
 
 
 
@@ -148,57 +178,70 @@ const BillingDetails = ({ paymentData, isModalVisible, setModalVisible, }: {
                                         }}>
                                         <InformationCircleIcon color={themeColors.neutral400} size={16} />
                                     </Pressable>
-                                    <Tooltip
-                                        visible={showTooltip}
-                                        onClose={() => setShowTooltip(false)}
-                                        top="35%"
-                                        left={"100%"}
-                                    >
+                                    <View style={{
+                                        position: 'relative',
+                                        zIndex: 55555555
+                                    }}>
+                                        <Tooltip
+                                            visible={showTooltip}
+                                            onClose={() => setShowTooltip(false)}
+                                            top="35%"
+                                            left={"20%"}
+                                        >
 
-                                        <View style={{
+                                            <View style={{
 
-                                            paddingBottom: 12,
-                                            flex: 1,
-                                            width: 200,
-                                            backgroundColor: themeColors.neutral100,
-                                            padding: 16,
-                                            borderRadius: 12
-                                        }}>
-                                            {
-                                                paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee ? <>
-                                                    <View style={{
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'space-between',
-                                                        paddingBottom: 12
+                                                paddingBottom: 12,
+                                                flex: 1,
+                                                width: 200,
+                                                backgroundColor: themeColors.neutral100,
+                                                padding: 16,
+                                                borderRadius: 12
+                                            }}>
+                                                {
+                                                    paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee ? <>
+                                                        <View style={{
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            paddingBottom: 12
 
-                                                    }}>
-                                                        <Text variant="body-sm" >Quick Delivery Fee</Text>
-                                                        <Text variant="caption-sm" style={{
-                                                            textAlign: 'right'
-                                                        }} >₹{(paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee / 100) - (19 / (paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee ? 1 : 0 + paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee ? 1 : 0))}</Text>
-                                                    </View>
-                                                </> : <></>
-                                            }
+                                                        }}>
+                                                            <Text variant="body-sm" >Quick Delivery Fee</Text>
+                                                            <Text variant="caption-sm" style={{
+                                                                textAlign: 'right'
+                                                            }} >
+                                                                ₹{
 
-                                            {
-                                                paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee ? <>
-                                                    <View style={{
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'space-between',
-                                                        paddingBottom: 12
+                                                                    (paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee / 100) < settings?.cap?.handling?.charge?.value ?
+                                                                        (paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee) :
+                                                                        (paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee / 100) -
+                                                                        (settings?.cap?.handling?.charge?.value / (paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee ? 1 : 0 +
+                                                                            paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee ? 1 : 0))}
+                                                            </Text>
+                                                        </View>
+                                                    </> : <></>
+                                                }
 
-                                                    }}>
-                                                        <Text variant="body-sm" >sameDayDeliveryFee</Text>
-                                                        <Text variant="caption-sm" style={{
-                                                            textAlign: 'right'
-                                                        }} >₹ {(paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee / 100) - (19 / (paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee ? 1 : 0 + paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee ? 1 : 0))} </Text>
-                                                    </View>
-                                                </> : <></>
-                                            }
-                                        </View>
-                                    </Tooltip>
+                                                {
+                                                    paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee ? <>
+                                                        <View style={{
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            paddingBottom: 12
+
+                                                        }}>
+                                                            <Text variant="body-sm" >sameDayDeliveryFee</Text>
+                                                            <Text variant="caption-sm" style={{
+                                                                textAlign: 'right'
+                                                            }} >₹ {(paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee / 100) - (19 / (paymentData?.paymentInfo?.revisedCost?.quickDeliveryFee ? 1 : 0 + paymentData?.paymentInfo?.revisedCost?.sameDayDeliveryFee ? 1 : 0))} </Text>
+                                                        </View>
+                                                    </> : <></>
+                                                }
+                                            </View>
+                                        </Tooltip>
+                                    </View>
 
                                 </View>
                                 <Text variant="caption-sm" style={{

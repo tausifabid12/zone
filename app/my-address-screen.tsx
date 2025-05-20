@@ -13,6 +13,7 @@ import { useQuery } from '@/hooks/useQuery'
 import { useMutation } from '@/hooks/useMutation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DropdownMenu from '@/components/DropdownMenu'
+import { ChevronRight, CirclePlus, Home } from 'lucide-react-native'
 
 
 
@@ -106,7 +107,7 @@ export default function myAddress() {
                                 gap: 8
                             }}>
 
-                                <PlusCircleIcon size={20} color={themeColors.primary600} />
+                                <CirclePlus size={20} color={themeColors.primary600} />
                                 <Text variant="caption-md" style={{
                                     color: themeColors.primary600
                                 }} >Add Address</Text>
@@ -118,12 +119,7 @@ export default function myAddress() {
                                 alignItems: 'center',
                                 gap: 4
                             }}>
-                                <Text variant="body-xl" style={{
-                                    color: themeColors.primary600,
-                                    marginTop: 3
-                                }}>
-                                    {">"}
-                                </Text>
+                                <ChevronRight size={20} color={themeColors.primary600} />
                             </View>
                         </TouchableOpacity>
 
@@ -147,21 +143,32 @@ export default function myAddress() {
                                 }]}>
                                     <View style={{
                                         flexDirection: 'row',
-                                        gap: 3,
+                                        gap: 18,
 
                                     }}>
-                                        <Image
-                                            source={{ uri: "https://via.placeholder.com/50" }} // Replace with actual image
-                                            style={styles.itemImage}
-                                        />
+                                        <View style={{
+                                            backgroundColor: themeColors.neutral100,
+                                            padding: 6,
+                                            borderRadius: 8,
+                                            height: 30
+                                        }}>
+                                            <Home color={themeColors.neutral900} size={18} />
+                                        </View>
                                         <View style={[styles.itemDetails, {
                                             marginRight: 8,
                                             width: "84%",
                                             // backgroundColor: 'red'
                                         }]}>
-                                            {/* <Text variant="caption-sm" >Home
+                                            <View style={{
+                                                marginBottom: 6,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
 
-                                            </Text> */}
+                                            }}>
+                                                <Text variant="caption-sm" >Home
+
+                                                </Text>
+                                            </View>
                                             <Text variant="body-xs" style={{
                                                 color: themeColors.neutral500
                                             }}>{item?.line1} </Text>

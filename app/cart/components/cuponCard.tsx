@@ -3,14 +3,16 @@ import { useTheme } from '@/contexts/theme.provider';
 import { ICoupon } from '@/interfaces/cupon.interface';
 import React from 'react';
 import { Pressable, View } from 'react-native';
+import { XMarkIcon } from 'react-native-heroicons/solid';
 
 
 interface Props {
     coupon: ICoupon;
     getPaymentDetails: (couponId: string) => void
+    appliedCoupon: string
 }
 
-const CouponCard: React.FC<Props> = ({ coupon, getPaymentDetails }) => {
+const CouponCard: React.FC<Props> = ({ coupon, getPaymentDetails, appliedCoupon, }) => {
 
 
     const { themeColors } = useTheme()
@@ -34,7 +36,8 @@ const CouponCard: React.FC<Props> = ({ coupon, getPaymentDetails }) => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 marginRight: 10,
-                minWidth: 300
+                minWidth: 300,
+                position: 'relative'
 
 
             }}
@@ -53,9 +56,27 @@ const CouponCard: React.FC<Props> = ({ coupon, getPaymentDetails }) => {
                 }}>
                 <Text style={{
                     color: themeColors.primary600
-                }} variant="caption-xs" >Apply </Text>
+                }} variant="caption-xs" >{appliedCoupon == coupon?._id ? 'Applied' : 'Apply'} </Text>
 
             </Pressable>
+
+            {
+                appliedCoupon == coupon?._id &&
+                <Pressable
+                    onPress={() => getPaymentDetails('')}
+                    style={{
+                        position: 'absolute',
+                        top: 3,
+                        right: 3,
+                        backgroundColor: themeColors.error100,
+                        borderRadius: 12
+                    }}>
+                    <XMarkIcon color={themeColors.error600} size={14} />
+
+                </Pressable>
+            }
+
+
 
 
         </View>

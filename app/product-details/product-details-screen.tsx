@@ -2,7 +2,7 @@ import Navbar from '@/components/NavBar';
 import Navbar2 from '@/components/Navbar2';
 import Text from '@/components/ui/Text';
 import { useTheme } from '@/contexts/theme.provider';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Pressable, FlatList } from 'react-native';
 import { CheckCircleIcon, StarIcon, ChevronLeftIcon } from 'react-native-heroicons/solid';
 import RecomendedProducts from './(components)/RecomendedProducts';
@@ -11,16 +11,24 @@ import SellerDetails from './(components)/SellerDetails';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { IProduct } from '@/interfaces/product.interface';
 import ExpandableText from './(components)/ExpandText';
-import { ShoppingCartIcon } from 'react-native-heroicons/outline';
 import { useCart } from '@/contexts/cart.context';
 import DeliveryModal from '@/components/DelivaryModal';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
+import { BadgeCheck, Repeat2, ShoppingBag, ShoppingCartIcon, Star, Wallet } from 'lucide-react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Entypo from '@expo/vector-icons/Entypo';
+import ProductImageSlider from './ProductImageSlider';
+import { ISettings } from '@/interfaces/settings.interface';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const ProductScreen = () => {
     const [expanded, setExpanded] = useState(false);
     const [selectedVariant, setSelectedVariant] = useState<any>('')
     const [isModalVisible, setModalVisible] = useState(false);
+    const [variantSelectError, setVariantSelectError] = useState('')
+    // @ts-ignore
+    const [settings, setSettings] = useState<ISettings>({})
     const { push } = useSafeNavigation();
 
     const { data } = useLocalSearchParams();
@@ -43,6 +51,26 @@ const ProductScreen = () => {
 
 
 
+    async function getSettingData() {
+        try {
+            const settingsString = await AsyncStorage.getItem('settings');
+            if (settingsString) {
+                const settings = JSON.parse(settingsString);
+                setSettings(settings)
+            }
+            return null; // or default settings if needed
+        } catch (error) {
+            console.error('Failed to load settings from AsyncStorage', error);
+            return null;
+        }
+    }
+
+    useEffect(() => {
+        getSettingData()
+    }, [])
+
+
+
     // ========== hooks 
     const { themeColors } = useTheme()
 
@@ -55,7 +83,7 @@ const ProductScreen = () => {
                 barStyle="dark-content"
             />
 
-            <View style={{
+            {/* <View style={{
                 width: '100%',
                 backgroundColor: themeColors.background,
                 flexDirection: 'row',
@@ -66,17 +94,25 @@ const ProductScreen = () => {
                 marginTop: 24
             }}>
 
-                <TouchableOpacity onPress={() => push('/(customTab)')} >
+                <TouchableOpacity
+
+                    // onPress={() => push('/(customTab)')} 
+                    onPress={() => router.back()}
+
+
+                >
                     <ChevronLeftIcon size={24} color="black" />
                 </TouchableOpacity>
                 <Text variant='caption-lg' style={{
 
-                }} >Product Details</Text>
+                }} ></Text>
 
                 <View>
 
                 </View>
-            </View>
+            </View> */}
+
+
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -84,22 +120,11 @@ const ProductScreen = () => {
                     flex: 1,
                     backgroundColor: themeColors.background
                 }}>
+
+
                 {/* Product Image */}
-                <View style={{
-                    height: 334,
-                    paddingHorizontal: 48,
-                    width: '100%',
-                    backgroundColor: themeColors.background,
-                    paddingVertical: 15
+                <ProductImageSlider productDetails={productDetails} />
 
-                }}>
-                    <Image
-                        source={{ uri: productDetails?.details?.thumbnail || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQs9gUXKwt2KErC_jWWlkZkGabxpeGchT-fyw&s' }} // Replace with your image path
-                        style={{ width: '100%', height: '100%', marginBottom: 16 }}
-                        resizeMode="contain"
-                    />
-
-                </View>
 
                 <View style={{ flex: 1, padding: 16, backgroundColor: '#fff' }}>
 
@@ -107,13 +132,18 @@ const ProductScreen = () => {
                     {
                         productDetails?.variants?.length ? <>
                             <View style={{
-                                paddingVertical: 16
+                                paddingBottom: 16,
+                                paddingTop: 14
                             }}>
                                 <Text variant='caption-sm' style={{
                                     color: themeColors.neutral700,
                                     marginBottom: 8
                                 }}>
-                                    Select
+                                    Select Variant :
+                                    <Text variant='body-sm' style={{
+                                        color: themeColors.error500,
+
+                                    }}>  {variantSelectError}</Text>
                                 </Text>
 
                                 <FlatList
@@ -121,19 +151,24 @@ const ProductScreen = () => {
                                     data={productDetails?.variants}
                                     keyExtractor={(item) => item?.name}
                                     showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={{ gap: 12, paddingHorizontal: 16 }}
+                                    contentContainerStyle={{ gap: 12, }}
                                     renderItem={({ item }) => (
                                         <Pressable
-                                            onPress={() => setSelectedVariant(item)}
+                                            onPress={() => {
+                                                setVariantSelectError('')
+                                                setSelectedVariant(item)
+
+                                            }}
                                             style={{
                                                 paddingVertical: 10,
                                                 paddingHorizontal: 24,
                                                 borderWidth: 1,
-                                                borderColor: selectedVariant?.name === item?.name ? themeColors.neutral600 : themeColors.neutral200,
+                                                borderColor: selectedVariant?.name === item?.name ? themeColors.primary600 : themeColors.neutral200,
+                                                backgroundColor: selectedVariant?.name === item?.name ? themeColors.primary50 : 'transparent',
                                                 borderRadius: 12,
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                marginRight: 4, // Optional, for spacing if `gap` doesn't apply
+                                                // marginRight: 4, 
                                             }}
                                         >
                                             <Text
@@ -154,13 +189,17 @@ const ProductScreen = () => {
                                                     style={{
                                                         color: themeColors.neutral900,
                                                     }}>
-                                                    ₹{item?.discountPrice}
+
+                                                    ₹{settings?.store?.includeSameDayDelivery && !productDetails?.details?.brandName ? item?.discountPrice + settings?.delivery?.sameDay[0]?.price : item?.discountPrice}
+                                                    {/* {item?.discountPrice} */}
                                                 </Text>
                                                 <Text variant='body-xxs'
                                                     style={{
                                                         color: themeColors.neutral400,
+                                                        textDecorationLine: "line-through"
                                                     }}>
-                                                    ₹{item?.originalPrice}
+                                                    ₹{settings?.store?.includeSameDayDelivery && !productDetails?.details?.brandName ? item?.originalPrice + settings?.delivery?.sameDay[0]?.price : item?.originalPrice}
+
                                                 </Text>
                                             </View>
                                         </Pressable>
@@ -178,19 +217,148 @@ const ProductScreen = () => {
 
 
                     {/*=========================== Product Details==================================== */}
-                    <Text variant="body-lg" style={{ marginBottom: 8, color: themeColors.neutral800 }}>{productDetails?.details?.title}</Text>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 3,
+                        marginVertical: 4
+
+
+                    }}>
+
+                        <MaterialIcons name="star" size={14} color={themeColors.success800} style={{
+                            marginTop: -3
+                        }} />
+                        <Text variant="caption-sm-prominent" style={{ color: themeColors.success800 }}>
+                            {productDetails?.rating}
+                        </Text>
+                    </View>
+                    <Text variant="body-xl" style={{ marginBottom: 8, color: themeColors.neutral800 }}>{productDetails?.details?.title}</Text>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: "center",
                         gap: 6
                     }}>
-                        <Text variant="heading-sm" style={{ marginBottom: 16, color: themeColors.neutral800 }}>₹{productDetails?.discountPrice}</Text>
-                        <Text variant="caption-md" style={{ marginBottom: 16, color: themeColors.neutral800, textDecorationLine: "line-through" }}>₹{productDetails?.originalPrice}</Text>
+                        <Text variant="heading-sm" style={{ marginBottom: 16, color: themeColors.neutral800 }}>
+                            ₹ {settings?.store?.includeSameDayDelivery && !productDetails?.details?.brandName ? productDetails?.discountPrice + settings?.delivery?.sameDay[0]?.price : productDetails?.discountPrice}
+
+
+                        </Text>
+                        <Text variant="caption-md" style={{ marginBottom: 16, color: themeColors.neutral800, textDecorationLine: "line-through" }}>
+                            ₹{settings?.store?.includeSameDayDelivery && !productDetails?.details?.brandName ? productDetails?.originalPrice + settings?.delivery?.sameDay[0]?.price : productDetails?.originalPrice}
+
+
+                        </Text>
                     </View>
-                    <Text variant="caption-md" style={{ marginTop: 32, color: themeColors.neutral600 }}>Product Details</Text>
+                    <View style={{
+                        borderTopColor: themeColors.neutral100,
+                        borderTopWidth: 1
+                    }} />
+
+                    {/* ========================= features cards ============ */}
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 10,
+                        paddingVertical: 14
+                    }}>
+                        <View style={{
+                            flex: 1,
+                            alignItems: 'center',
+                            borderWidth: 1,
+                            borderColor: themeColors.neutral200,
+                            borderRadius: 15,
+                            padding: 12,
+                            height: '100%'
+                        }}>
+                            <Repeat2 color={themeColors.neutral600} size={24} />
+                            <Text variant='caption-xs-prominent'
+                                style={{
+                                    color: themeColors.neutral500,
+                                    marginTop: 5,
+                                    textAlign: 'center'
+                                }}>
+                                3 Day
+                            </Text>
+                            <Text variant='caption-xs-prominent'
+                                style={{
+                                    color: themeColors.neutral500,
+                                    textAlign: 'center'
+
+                                }}>
+                                Return
+                            </Text>
+
+
+                        </View>
+                        <View style={{
+                            flex: 1,
+                            alignItems: 'center',
+                            borderWidth: 1,
+                            borderColor: themeColors.neutral200,
+                            borderRadius: 15,
+                            padding: 12,
+                            height: '100%'
+                        }}>
+                            <Wallet color={themeColors.neutral600} size={24} />
+                            <Text variant='caption-xs-prominent'
+                                style={{
+                                    color: themeColors.neutral500,
+                                    marginTop: 5,
+                                    textAlign: 'center'
+                                }}>
+                                Pay On Delivery
+                            </Text>
+
+
+                        </View>
+                        <View style={{
+                            flex: 1,
+                            alignItems: 'center',
+                            borderWidth: 1,
+                            borderColor: themeColors.neutral200,
+                            borderRadius: 15,
+                            padding: 12,
+                            height: '100%'
+                        }}>
+                            <BadgeCheck color={themeColors.neutral600} size={24} />
+                            <Text variant='caption-xs-prominent'
+                                style={{
+                                    color: themeColors.neutral500,
+                                    marginTop: 5,
+                                    textAlign: 'center'
+                                }}>
+                                Verified
+                            </Text>
+                            <Text variant='caption-xs-prominent'
+                                style={{
+                                    color: themeColors.neutral500,
+                                    textAlign: 'center'
+
+                                }}>
+                                Seller
+                            </Text>
+
+
+                        </View>
+
+
+                    </View>
+
+
+
+
+
+
+
+
+                    {/* ==================== */}
+
+                    <Text variant="caption-md" style={{ marginTop: 16, color: themeColors.neutral600 }}>Product Details</Text>
                     <Text variant="caption-sm" style={{ marginTop: 12, color: themeColors.neutral700 }}>Description</Text>
 
-                    <ExpandableText text={productDetails?.details?.description?.replace(/<[^>]*>/g, "")?.trim() || ""} />;
+                    <ExpandableText maxLength={250} text={productDetails?.details?.description?.replace(/<[^>]*>/g, "")?.trim() || ""} />;
                     {/* <Text variant="body-sm" style={{ marginTop: 8, color: themeColors?.neutral700, textAlign: 'justify' }}>
                         {productDetails?.details?.description}
                     </Text> */}
@@ -246,10 +414,7 @@ const ProductScreen = () => {
                         position: 'relative'
                     }}>
 
-                    <Image source={require('../../assets/icons/common/Cart3.png')} style={{
-                        width: 24,
-                        height: 24,
-                    }} />
+                    <ShoppingBag color={themeColors.white} size={24} />
 
 
                     <View style={{
@@ -270,7 +435,20 @@ const ProductScreen = () => {
                     </View>
                 </Pressable>
                 <Pressable
-                    onPress={() => setModalVisible(true)}
+                    onPress={() => {
+
+                        if (!productDetails?.variants?.length) {
+                            setModalVisible(true)
+                        }
+
+                        if (selectedVariant && productDetails?.variants?.length) {
+                            setVariantSelectError('')
+                            setModalVisible(true)
+                        } else {
+                            setVariantSelectError('Please select a variant first')
+                        }
+
+                    }}
                     // onPress={handleAddToCart}
                     style={{
                         alignItems: 'center',

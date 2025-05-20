@@ -31,7 +31,8 @@ const Nav = ({ paymentData }: { paymentData: any }) => {
     }]}>
       {/* Left Section: Back Icon and Title */}
       <View style={styles.leftSection}>
-        <TouchableOpacity onPress={() => router.push('/(customTab)')} style={styles.iconButton}>
+        <TouchableOpacity onPress={() => router.back()}
+          style={styles.iconButton}>
           <ChevronLeftIcon size={20} color={themeColors.neutral800} />
         </TouchableOpacity>
         <Text variant='caption-lg-prominent' style={{

@@ -148,7 +148,10 @@ const SelectAddressModal: React.FC<BottomModalProps> = ({ isModalVisible, setMod
                             {
                                 userData?.data?.address?.map((item, i) =>
                                     <Pressable
-                                        onPress={() => addAddress(item)}
+                                        onPress={() => {
+                                            addAddress(item)
+                                            setModalVisible(false)
+                                        }}
 
                                         key={i} style={
                                             [styles.item, {

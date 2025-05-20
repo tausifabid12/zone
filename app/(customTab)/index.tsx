@@ -1,7 +1,7 @@
 
 
 import { useTheme } from '@/contexts/theme.provider';
-import { router, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -39,6 +39,7 @@ import { useNavigation } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/useDebouncedNavigation';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import CloseModal from '@/components/CloseModal';
+import { Search } from 'lucide-react-native';
 // import analytics from '@react-native-firebase/analytics';
 
 
@@ -60,17 +61,29 @@ const QuickHOme = () => {
     const scroll = useSharedValue<number>(0);
     const [isBackToTopVisible, setIsBackToTopVisible] = useState(false)
     const [showExitModal, setShowExitModal] = useState(false);
+    const [showLoader, setShowLoader] = useState(true);
 
-    useEffect(() => {
-        const onBackPress = () => {
-            setShowExitModal(true); // Show modal instead of exiting
-            return true; // prevent default behavior (exit app)
-        };
 
-        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    const pathname = usePathname();
 
-        return () => subscription.remove();
-    }, []);
+
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                if (pathname == '/') {
+                    setShowExitModal(true);
+                    return true;
+                }
+                return false;
+            };
+
+            const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+            return () => subscription.remove();
+        }, [])
+    );
+
 
     const handleExit = () => {
         BackHandler.exitApp(); // Close the app
@@ -83,7 +96,7 @@ const QuickHOme = () => {
 
     // ================= hooks 
     const { data: products, loading: productLoading } = useQuery<IProductData>(
-        `products/list`
+        `products/list?origin=77.126036,28.62985`
     );
     const { data: categories, loading: categoryLoading } = useQuery<ICategoryData>('products/categories?limit=12');
 
@@ -239,27 +252,34 @@ const QuickHOme = () => {
 
 
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowLoader(false);
+        }, 600);
+
+        return () => clearTimeout(timer);
+    }, []);
 
 
     // *********************************** loading ******************************
 
-    if (productLoading || categoryLoading) {
+    if (productLoading || !categoryLoading) {
         return <Loading />
     }
 
 
 
-
+    console.log(pathname, "+++++++++++++++++++++  ||||||||||||||||||||||||||||||||")
 
 
 
     return (
         <>
-            <StatusBar
+            {/* <StatusBar
                 translucent
                 backgroundColor={themeColors.primary600}
                 barStyle="light-content"
-            />
+            /> */}
 
             <View style={{ flex: 1, }} >
                 <Animated.View
@@ -267,8 +287,9 @@ const QuickHOme = () => {
                         backgroundColor: themeColors.primary600,
                         paddingHorizontal: 16,
                         justifyContent: 'center',
-                        marginTop: 10,
-                        paddingTop: 20,
+                        // marginTop: 10,
+                        paddingTop: 30,
+
                         // display: ''
 
                     }, styleHeight]}
@@ -320,7 +341,8 @@ const QuickHOme = () => {
                                     }}
                                 >
 
-                                    {address?.line1?.slice(0, 30) || location || "Loading..."}
+                                    {address?.line1?.slice(0, 30) || location?.slice(0, 30) || "Loading..."}
+                                    {/* {address?.line1?.slice(0, 30) || location?.slice(0, 30) || "Loading..."} */}
                                     {/* Lorem ipsum dolor sit amet consec */}
                                 </Text>
                                 <Entypoicons name="chevron-down" color="#FFFFFF" size={20} />
@@ -337,13 +359,13 @@ const QuickHOme = () => {
                             flexDirection: 'row',
                             alignItems: 'center',
                             backgroundColor: '#FFFFFF',
-                            borderRadius: 12,
-                            height: 50,
+                            borderRadius: 15,
+                            height: 47,
                             paddingHorizontal: 14,
 
                         }}
                     >
-                        <AntDesignIcons name="search1" color={themeColors.neutral400} size={20} />
+                        <Search color={themeColors.neutral400} size={24} />
                         <TextInput
                             placeholder="Search Products"
                             placeholderTextColor={themeColors.neutral400}
@@ -374,12 +396,17 @@ const QuickHOme = () => {
                     }}>
 
 
-                    <Banners />
+                    <Banners screen='Home' section='top' />
                     <Products products={products?.data} />
-                    <Banners />
+                    <Banners screen='Home' section='middle' />
+
                     <Category categories={categories?.data} />
-                    <Banners />
-                    <Products products={products?.data} />
+                    <Banners screen='Home' section='bottom' />
+                    <View style={{
+                        paddingBottom: 16
+                    }}>
+                        <Products products={products?.data} />
+                    </View>
                     <Footer />
                 </Animated.ScrollView>
 

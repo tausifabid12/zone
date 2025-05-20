@@ -83,10 +83,6 @@ const Products = ({ products }: any) => {
                 }
 
             </View>
-            {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text variant='caption-xs' style={{ color: themeColors.success800 }}> {item.rating} ★ </Text>
-
-            </View> */}
             <View style={{
                 flexDirection: 'row',
                 alignItems: "center",

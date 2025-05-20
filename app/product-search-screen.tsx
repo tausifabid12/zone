@@ -9,6 +9,8 @@ import {
     TextInput,
     ScrollView,
     Pressable,
+    StatusBar,
+    Platform,
 } from "react-native";
 
 import Text from "@/components/ui/Text";
@@ -31,6 +33,9 @@ import { ChevronDoubleDownIcon, ChevronLeftIcon, ChevronRightIcon } from "react-
 import { ChevronDownIcon, ShoppingCartIcon } from "react-native-heroicons/outline";
 import SortingModal from "@/components/SortingModal";
 import { useSafeNavigation } from "@/hooks/useSafeNavigation";
+import { ChevronRight, ChevronsLeftIcon, Search, ShoppingCart } from "lucide-react-native";
+import Constants from 'expo-constants';
+import { LinearGradient } from "expo-linear-gradient";
 
 
 
@@ -71,15 +76,19 @@ const SavedProducts = () => {
     });
 
     //======================= Hooks ================================
-    const { categoryId } = useLocalSearchParams();
+    const { categoryId, categoryName } = useLocalSearchParams();
     const { addToCart, cart, updateQuantity, totalItems } = useCart();
     const { themeColors } = useTheme();
     const { push } = useSafeNavigation();
 
     // origin = ${ filters.origin }
+    // const { data, error, loading, refetch } = useQuery<Idata>(
+    //     `products/list?sortBy=${sortOption}&sortOrder=${sortOrder}&maxDistance=${isQuickDeliverySelected ? '7999' : ''}&searchTerm=${searchQuery}&page=${currentPage}&limit=10&minRating=${minRating}&origin=80.230319,13.028178`
+    // );
     const { data, error, loading, refetch } = useQuery<Idata>(
-        `products/list?sortBy=${sortOption}&sortOrder=${sortOrder}&allIndia=${filters.allIndia}&maxDistance=${isQuickDeliverySelected ? '7999' : ''}&sameDay=${filters.sameDay}&searchTerm=${searchQuery}&page=${currentPage}&limit=10`
+        `products/list?sortBy=${sortOption}&sortOrder=${sortOrder}&maxDistance=34999&searchTerm=${searchQuery}&page=${currentPage}&limit=10&minRating=${minRating}&origin=80.230319,13.028178`
     );
+
 
     // & categoryId=${ categoryId } &minRating=${minRating}
 
@@ -87,33 +96,23 @@ const SavedProducts = () => {
 
         const strLocation = await AsyncStorage.getItem('userLocation');
         const location = JSON.parse(strLocation as string);
-        console.log(location, "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
 
-        if (location) {
-            setFilters(prevFilters => {
-                const updatedFilters = {
-                    ...prevFilters,
-                    origin: `${location?.lat},${location?.lon}`
-                };
-                console.log(updatedFilters, '{{{{{{{{{{{');
 
-                // Refetch after state update
-                refetch();
+        // if (location) {
+        //     setFilters(prevFilters => {
+        //         const updatedFilters = {
+        //             ...prevFilters,
+        //             origin: `${location?.lon},${location?.lat}`
+        //         };
+        //         console.log(updatedFilters, '{{{{{{{{{{{');
 
-                return updatedFilters;
-            });
-        }
+        //         // Refetch after state update
+        //         refetch();
+
+        //         return updatedFilters;
+        //     });
+        // }
     }
-
-    // useEffect(() => {
-    //     getLocationAndSearch()
-    // }, [])
-
-
-
-    console.log(sortOption)
-
-
     useEffect(() => {
         getLocationAndSearch();
 
@@ -122,56 +121,74 @@ const SavedProducts = () => {
         }, 1000);
 
         return () => clearTimeout(timer); // clean up
-    }, [sortOption, categoryId]);
+    }, [sortOption, categoryId, isQuickDeliverySelected]);
+
+
+
+
+
 
 
     // ================= render===============
 
     return (
         <>
-            <ScrollView style={styles.container}>
-                <View style={{ marginTop: 60 }}>
-                    <TouchableOpacity
+            <LinearGradient
+                colors={['#A5B4FC', '#FFFFFF']}
+                style={styles.gradientBackground}
+            />
+            {/* <StatusBar backgroundColor={themeColors.primary600} /> */}
+            <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+            <View style={{
+                marginTop: 60, position: 'relative', zIndex: 200, backgroundColor: "transparent",
+                paddingHorizontal: 16,
+            }}>
+                <TouchableOpacity
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        borderWidth: 0.4,
+                        borderColor: themeColors.neutral300,
+                        paddingHorizontal: 16,
+                        marginBottom: 20,
+                        borderRadius: 15,
+                        height: 45,
+                        backgroundColor: themeColors.background
+                    }}>
+                    <Pressable
+
+                        // onPress={() => router.push('/(customTab)')}
+                        onPress={() => router.back()}
+
+                    >
+                        <ChevronLeftIcon size={24} color={themeColors.primary600} />
+                    </Pressable>
+                    <TextInput
+                        placeholder={`Search ${categoryName || 'Products'}`}
+                        placeholderTextColor={themeColors.neutral300}
                         style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            borderRadius: 14,
-                            borderWidth: 0.4,
-                            borderColor: themeColors.neutral300,
-                            paddingHorizontal: 16,
-                            marginBottom: 20,
-                        }}>
-                        <Pressable
-
-                            // onPress={() => router.push('/(customTab)')}
-                            onPress={() => push('/(customTab)')}
-
-                        >
-                            <Icon name='primaryArrowLeft' size={24} />
-                        </Pressable>
-                        <TextInput
-                            placeholder='Search Products..'
-                            placeholderTextColor={themeColors.neutral300}
-                            style={{
-                                height: 52,
-                                flex: 1,
-                                marginLeft: 8,
-                                fontSize: 17,
-                                color: themeColors.neutral800,
-                                fontFamily: 'Poppins_400Regular',
-                                marginTop: 5,
-                            }}
-                            value={searchQuery} // Controlled input
-                            onChangeText={(text) => setSearchQuery(text)} // Handle text change
-                        />
-                        <TouchableOpacity>
-                            <Icon name='search' size={24} />
-                        </TouchableOpacity>
+                            borderRadius: 15,
+                            height: 47,
+                            flex: 1,
+                            marginLeft: 8,
+                            fontSize: 14,
+                            color: themeColors.neutral800,
+                            fontFamily: 'Poppins_400Regular',
+                            marginTop: 4,
+                        }}
+                        value={searchQuery} // Controlled input
+                        onChangeText={(text) => setSearchQuery(text)} // Handle text change
+                    />
+                    <TouchableOpacity>
+                        <Search size={24} color={themeColors.neutral400} />
                     </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+
 
                 {/* Filter Options */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -196,7 +213,7 @@ const SavedProducts = () => {
 
                     <TouchableOpacity
                         onPress={() =>
-                            setIsQuickDeliverySelected(true)
+                            setIsQuickDeliverySelected(!isQuickDeliverySelected)
                             // setFilters((prevFilters: any) => ({
                             //     ...prevFilters,
                             //     quick: prevFilters.quick === true ? "" : true
@@ -296,49 +313,55 @@ const SavedProducts = () => {
                     <Pressable
                         onPress={() => router.push('/(customTab)/cart-screen')}
                         style={{
-                            // backgroundColor: 'red',
                             position: 'absolute',
                             bottom: 20,
-                            width: '50%',
+                            left: '50%',
+                            transform: [{ translateX: -90 }],
+                            width: 180,
                             alignItems: 'center',
-                            left: '20%',
                             borderRadius: 1000,
-                            padding: 0
 
-                        }}>
-
-                        <View style={{
-                            backgroundColor: themeColors.primary600,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 8,
-                            borderRadius: 1000,
-                            paddingHorizontal: 16,
-                            paddingVertical: 12,
-                        }}>
-                            <View style={{
-                                backgroundColor: themeColors.primary500,
-                                padding: 8,
-                                borderRadius: 100
-                            }}>
-                                <ShoppingCartIcon color={themeColors.white} size={28} />
+                        }}
+                    >
+                        <View
+                            style={{
+                                backgroundColor: themeColors.primary600,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 8,
+                                borderRadius: 1000,
+                                // paddingHorizontal: 6,
+                                paddingVertical: 6,
+                                paddingLeft: 6,
+                                paddingRight: 2,
+                                position: 'relative',
+                                zIndex: -100,
+                                borderRightColor: 'red'
+                            }}
+                        >
+                            <View
+                                style={{
+                                    backgroundColor: themeColors.primary500,
+                                    padding: 8,
+                                    borderRadius: 100,
+                                }}
+                            >
+                                <ShoppingCart color={themeColors.white} size={22} />
                             </View>
                             <View>
-                                <Text variant="caption-lg-prominent" style={{
-                                    color: themeColors.white
-                                }} >View cart</Text>
-                                <Text variant="caption-xs" style={{
-                                    color: themeColors.white
-                                }} >{totalItems} Items</Text>
+                                <Text variant="caption-md-prominent" style={{ color: themeColors.white }}>
+                                    View cart
+                                </Text>
+                                <Text variant="caption-xxs" style={{ color: themeColors.white }}>
+                                    {totalItems} Items
+                                </Text>
                             </View>
-
-                            <ChevronRightIcon color={themeColors.white} />
-
+                            <ChevronRight color={themeColors.white} />
                         </View>
+                    </Pressable>
 
 
-
-                    </Pressable></> : <></>
+                </> : <></>
             }
 
             {isModalVisible && (
@@ -369,11 +392,21 @@ const SavedProducts = () => {
 };
 
 const styles = StyleSheet.create({
+    gradientBackground: {
+        height: Constants.statusBarHeight + (Platform.OS === 'android' ? 89 : 0),
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: -9, // ✅ This makes the gradient go behind
+    },
+
     container: {
         flex: 1,
         backgroundColor: "#FFFFFF",
         paddingHorizontal: 16,
-        position: 'relative'
+        position: 'relative',
+        zIndex: -10
 
     },
     header: {
@@ -464,6 +497,7 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "600",
     },
+
 });
 
 export default SavedProducts;

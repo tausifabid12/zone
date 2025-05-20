@@ -7,6 +7,7 @@ import {
     StyleSheet,
     ScrollView,
     StatusBar,
+    Pressable,
 } from "react-native";
 import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import { useTheme } from "@/contexts/theme.provider";
@@ -16,6 +17,8 @@ import Navbar2 from "@/components/Navbar2";
 import DisplayMap from "@/components/DisplayMap";
 import ConfirmAddressModal from "@/components/ConfirmAddressModal";
 import Loading from "@/components/shared/loading";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LocateFixed, Search } from "lucide-react-native";
 
 const API_KEY = "ufkwRfSH67q92SA6g1yeYC7wlXERC0amFDCpA85y";
 const REQUEST_ID = "XXX";
@@ -281,9 +284,6 @@ export default function CreateAddress() {
 
 
     const fetchPlaceDetails = async (placeId: string) => {
-
-        console.log(placeId, 'placeId        placeId                 placeId  ')
-
         try {
             const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=AIzaSyCIfqQB-NJIFyNoWUWZPy4xhqeCBRvQM-c`;
             const response = await fetch(url);
@@ -315,18 +315,29 @@ export default function CreateAddress() {
         }
     };
 
-    useEffect(() => {
 
+    async function getCurrentLatLon() {
+        const strLocation = await AsyncStorage.getItem('userLocation');
+        const location = JSON.parse(strLocation as string);
+
+        setMarkerCoordinates({ ...markerCoordinates, latitude: location?.lat, longitude: location?.lon })
+    }
+
+
+    useEffect(() => {
         if (selectedLocation?.place_id) {
             fetchPlaceDetails(selectedLocation?.place_id)
         }
-
-
-
     }, [
         selectedLocation
     ])
 
+
+
+    useEffect(() => {
+        getCurrentLatLon()
+    },
+        [])
 
 
     if (loading) {
@@ -347,9 +358,9 @@ export default function CreateAddress() {
             />
             <View style={{ flex: 1, backgroundColor: themeColors.background, position: "relative" }}>
                 <Navbar2 title="Confirm Delivery Location" />
-                <ScrollView style={{ flex: 1, borderRightColor: "red" }}>
+                <ScrollView style={{ flex: 1, position: 'relative' }}>
                     <View style={styles.inputContainer}>
-                        <MagnifyingGlassIcon size={18} color={themeColors.primary600} />
+                        <Search size={20} color={themeColors.primary600} />
                         <TextInput
                             placeholder="Search Location, Area, Pincode"
                             placeholderTextColor={themeColors.neutral300}
@@ -360,7 +371,28 @@ export default function CreateAddress() {
                                 setIsSelected(false); // Show suggestions again
                             }}
                         />
+
                     </View>
+                    <Pressable
+
+                        onPress={() => getCurrentLatLon()}
+                        style={{
+                            paddingTop: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 6,
+                            marginTop: -14,
+                            paddingLeft: 17,
+                            paddingBottom: 8
+                        }}>
+                        <LocateFixed color={themeColors.primary600} size={20} />
+                        <Text variant="caption-sm" style={{
+                            color: themeColors.primary600
+                        }}>
+                            Use Current Location
+                        </Text>
+
+                    </Pressable>
 
                     {suggestions.length > 0 && !isSelected && (
                         <FlatList
@@ -378,6 +410,22 @@ export default function CreateAddress() {
                     <View style={styles.mapContainer}>
                         <DisplayMap selectedLocation={selectedLocation} setSelectedLatAndLon={setSelectedLatAndLon} markerCoordinates={markerCoordinates} onLocationChange={handleLocationChange} />
                     </View>
+
+
+                    <Pressable
+                        style={{
+                            backgroundColor: themeColors.background,
+                            padding: 4,
+                            position: 'absolute',
+                            bottom: 30,
+                            right: 30,
+                            zIndex: 5000
+
+                        }}
+                        onPress={() => getCurrentLatLon()}
+                    >
+                        <LocateFixed size={20} color={themeColors.neutral400} />
+                    </Pressable>
 
                     <ConfirmAddressModal isModalVisible={isVisible} selectedLocation={selectedLocation} setModalVisible={setIsVisible} markerCoordinates={markerCoordinates} setLoading={setLoading} selectedLatAndLon={selectedLatAndLon} />
                 </ScrollView>
@@ -445,6 +493,8 @@ const styles = StyleSheet.create({
         flex: 1,
         width: "100%",
         height: 820,
+        position: 'relative',
+        zIndex: -100
     },
     buttonContainer: {
         paddingHorizontal: 16,

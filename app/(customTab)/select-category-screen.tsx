@@ -86,9 +86,11 @@ export default function SelectCategory() {
                 </Text> */}
 
                 <View style={{
-                    paddingVertical: 10,
+                    paddingBottom: 10,
                     position: 'relative',
-                    zIndex: 100000
+                    zIndex: 100000,
+                    marginTop: -7
+                    // paddingTop: 10
                 }}>
                     <TextInput
                         placeholder="Search Categories"
@@ -99,11 +101,11 @@ export default function SelectCategory() {
                             flex: 1,
 
                             marginLeft: 8,
-                            fontSize: 14,
+                            fontSize: 13,
                             color: '#000000',
                             fontFamily: 'Poppins_400Regular',
-                            height: 50,
-                            borderRadius: 14,
+                            borderRadius: 15,
+                            height: 45,
                             borderWidth: 0.4,
                             borderColor: themeColors.neutral300,
                             paddingHorizontal: 16,
@@ -133,6 +135,8 @@ export default function SelectCategory() {
                         <>
 
                             <CategoryBody data={data?.data || []} />
+                            {/* <CategoryBody data={data?.data || []} /> */}
+
                         </>
                 }
 
@@ -140,6 +144,11 @@ export default function SelectCategory() {
 
 
 
+                <View style={{
+                    paddingBottom: 40
+                }}>
+
+                </View>
 
 
             </ScrollView>

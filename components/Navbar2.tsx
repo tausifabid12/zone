@@ -27,6 +27,7 @@ export default function Navbar2({ title }: any) {
                 <ChevronLeftIcon size={24} color="black" />
             </TouchableOpacity>
             <Text variant='caption-lg' style={{
+                marginLeft: -24
 
             }} >{title}</Text>
 

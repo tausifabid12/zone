@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         padding: 10,
         borderRadius: 8,
-        zIndex: 10,
+        zIndex: 1000,
     },
 });

@@ -15,7 +15,7 @@ const totalSpacing = (columns - 1) * gap + containerPadding * 2;
 const screenWidth = Dimensions.get('window').width;
 const itemWidth = (screenWidth - totalSpacing) / columns;
 
-export default function Category({ categories }: { categories: ICategory[] }) {
+export default function Category({ categories }: { categories: any[] }) {
 
 
 

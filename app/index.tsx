@@ -10,6 +10,7 @@ import {
     ImageBackground,
     StatusBar,
     Pressable,
+    Image,
 } from 'react-native';
 
 const OnboardingScreen = () => {
@@ -25,75 +26,74 @@ const OnboardingScreen = () => {
 
     async function handleDummyLogin() {
 
-        // const userDataStr = await AsyncStorage.getItem('userData')
-        // const userData = JSON.parse(userDataStr as string)
+        // // const userDataStr = await AsyncStorage.getItem('userData')
+        // // const userData = JSON.parse(userDataStr as string)
 
-        const res = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=AIzaSyB6ipqXz4bKIIjVGK_nc-La4UkiAOY6diM', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', // or 'application/x-www-form-urlencoded'
-            },
-            body: JSON.stringify({
-                "phoneNumber": "+8801318048544",
-                "recaptchaToken": "fake-recaptcha-token"
-            })
-        })
+        // const res = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=AIzaSyB6ipqXz4bKIIjVGK_nc-La4UkiAOY6diM', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json', // or 'application/x-www-form-urlencoded'
+        //     },
+        //     body: JSON.stringify({
+        //         "phoneNumber": "+8801318048544",
+        //         "recaptchaToken": "fake-recaptcha-token"
+        //     })
+        // })
 
-        const otpData = await res.json()
+        // const otpData = await res.json()
 
-        console.log(otpData, '{{{{{{{{{{{{{')
+        // console.log(otpData, '{{{{{{{{{{{{{')
 
-        if (otpData) {
-            const sessionInfo = otpData?.sessionInfo
-            const res2 = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key=AIzaSyB6ipqXz4bKIIjVGK_nc-La4UkiAOY6diM', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json', // or 'application/x-www-form-urlencoded'
-                },
-                body: JSON.stringify({
-                    "sessionInfo": sessionInfo, // Session info from the send otp api response
-                    "code": "129400" // 6 digit code
-                })
-            })
+        // if (otpData) {
+        //     const sessionInfo = otpData?.sessionInfo
+        //     const res2 = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key=AIzaSyB6ipqXz4bKIIjVGK_nc-La4UkiAOY6diM', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json', // or 'application/x-www-form-urlencoded'
+        //         },
+        //         body: JSON.stringify({
+        //             "sessionInfo": sessionInfo, // Session info from the send otp api response
+        //             "code": "129400" // 6 digit code
+        //         })
+        //     })
 
-            const tokenData = await res2.json()
+        //     const tokenData = await res2.json()
 
-            console.log(tokenData, 'tokenDatatokenDatatokenDatatokenDatatokenData')
+        //     console.log(tokenData, 'tokenDatatokenDatatokenDatatokenDatatokenData')
 
-            const token = tokenData?.idToken
-            await AsyncStorage.setItem('token', token)
-            if (token) {
-
-                const userRes = await fetch('https://dev.zone42.in/api-main/customers/profile', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                const userData = await userRes.json()
-                console.log(userData, '{{{{{{{{{{{{{{{')
-                AsyncStorage.setItem('userData', JSON.stringify(userData?.data))
-                router.push('/(customTab)')
+        //     const token = tokenData?.idToken
+        //     await AsyncStorage.setItem('token', token)
+        //     if (token) {
 
 
-                // await refetch()
-                // console.log(userData, 'userData?.datauserData?.datauserData?.datauserData?.datauserData?.datauserData?.data   userData?.datauserData?.datauserData?.datauserData?.data')
+        //         console.log("here  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
-            }
+        //         const userRes = await fetch('https://dev.zone42.in/api-main/customers/profile', {
+        //             method: 'GET',
+        //             headers: {
+        //                 'Authorization': `Bearer ${token}`,
+        //                 'Content-Type': 'application/json'
+        //             }
+        //         })
+        //         const userData = await userRes.json()
+        //         console.log("here    userData  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        //         console.log(userData, '{{{{{{{{{{{{{{{')
+        //         AsyncStorage.setItem('userData', JSON.stringify(userData?.data))
+        //         router.push('/(customTab)')
 
 
+        //         // await refetch()
+        //         // console.log(userData, 'userData?.datauserData?.datauserData?.datauserData?.datauserData?.datauserData?.data   userData?.datauserData?.datauserData?.datauserData?.data')
 
-        }
 
-
-
+        //     }
 
 
 
+        // }
 
-
+        router.push('/auth/login-screen')
     }
 
 
@@ -125,20 +125,20 @@ const OnboardingScreen = () => {
                 backgroundColor="transparent"
                 barStyle="light-content"
             />
-            <ImageBackground
-                source={require('../assets/images/onboarding-bg.jpg')}
-                style={styles.backgroundImage}
-                resizeMode="cover">
-                <Pressable
-                    // onPress={() => router.push('/auth/login-screen')}
-                    style={styles.overlay}>
-                    <Text variant='title-md' style={{
-                        color: themeColors.white
-                    }} >
-                        Tomato
-                    </Text>
-                </Pressable>
-            </ImageBackground>
+            <Pressable style={{
+                flex: 1,
+            }} onPress={() => router.push('/auth/login-screen')}>
+                <ImageBackground
+                    source={require('../assets/images/onboarding-bg.jpg')}
+                    style={styles.backgroundImage}
+                    resizeMode="cover">
+                    <Image source={require('../assets/images/logo.png')} style={{
+                        height: 120,
+                        width: 130,
+                        objectFit: 'contain'
+                    }} />
+                </ImageBackground>
+            </Pressable>
         </>
     );
 };
@@ -148,6 +148,8 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     overlay: {
         flex: 1,
